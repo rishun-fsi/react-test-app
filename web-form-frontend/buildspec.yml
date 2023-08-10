@@ -1,0 +1,18 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - npm ci
+  build:
+    commands:
+      - npm run build
+  post_build:
+    command:
+      - aws cloudfront create-invalidation --distribution-id EZEYH026S25BZ --paths /*
+artifacts:
+  files:
+    - '**/*'
+  base-directory: build/

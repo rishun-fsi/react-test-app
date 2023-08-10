@@ -1,0 +1,12 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - npm ci
+      - npm i -g cdk
+  build:
+    commands:
+      - npm run deploy
