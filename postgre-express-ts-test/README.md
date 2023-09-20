@@ -1,10 +1,10 @@
 ## 事前準備
 ```
 $ npm init -y
-$ npm i express pg-promise
+$ npm i express pg-promise cors
 $ npm i -D nodemon typescript ts-node
 $ npx tsc --init
-$ npm i -D @types/express @types/pg-promise @types/aws-lambda
+$ npm i -D @types/express @types/pg-promise @types/aws-lambda @types/cors
 ```
 
 ## package.json 修正

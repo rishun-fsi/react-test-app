@@ -18,8 +18,9 @@ import { createGetOneResponseBody } from './questionnair/get-one';
 
 import * as express from "express";
 import { NextFunction, Request, Response } from "express"
+import * as cors from 'cors';
 const app = express();
-
+app.use(cors<Request>());
 app.use(express.json());
 
 
@@ -195,6 +196,7 @@ app.use("/questionnair/:questionnairId", questionnairHandle);
 app.use("/questionnair", questionnairHandle);
 
 
-app.listen("3000", (): void => {
-  console.log("Server Running!");
+const PORT = 5000
+app.listen(PORT, (): void => {
+  console.log("server is running on PORT " + PORT);
 });
