@@ -1,19 +1,39 @@
 ## 事前準備
 ```
-$ npx tsc --init
 $ npm init -y
-$ npm i express nodemon pg
+$ npm i express pg
+$ npm i -D nodemon typescript ts-node
+$ npx tsc --init
+$ npm i -D @types/express @types/pg
 ```
 
 ## package.json 修正
 ```
-"start": "node server.js"
-↓
-"start": "nodemon server.js"
+  "scripts": {
+    "start": "node ./build/index.js",
+    "build": "tsc -p .",
+    "dev": "nodemon ./src/index.ts"
+  },
+```
+
+## tsconfig.json 修正
+```
+"target": "es2020",  
+
+"rootDir": "./src", 
+"moduleResolution": "node",  
+
+"outDir": "./dist", 
 ```
 
 ## postgresql
 ```
+$ psql -h localhost -p 5432 -U postgres -d postgres -f ../web-form/db/init.sql
+
+$ psql -h localhost -p 5432 -U postgres -d postgres -f ../web-form/db/insert_test_data.sql
+
+$ psql -h localhost -p 5432 -U postgres -d postgres
+
 # \l
 # CREATE DATABASE users;
 # \! cls

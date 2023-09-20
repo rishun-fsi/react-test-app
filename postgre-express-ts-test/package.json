@@ -1,0 +1,25 @@
+{
+  "name": "postgre-express-ts-test",
+  "version": "1.0.0",
+  "description": "``` $ npm init -y $ npx tsc --init $ npm i express nodemon pg ```",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./build/index.js",
+    "build": "tsc -p .",
+    "dev": "nodemon ./src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/pg": "^8.10.2",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+}
