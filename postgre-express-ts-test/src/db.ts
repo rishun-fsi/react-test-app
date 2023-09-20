@@ -1,11 +1,11 @@
-import pgPromise from 'pg-promise';
+import * as pgPromise from 'pg-promise';
 
 const pgp = pgPromise({/* Initialization Options */});
 
 const connection = {
     user: 'postgres',
     host: 'localhost',
-    password: 'postgre',
+    password: 'postgres',
     database: 'postgres',
     port: 5432
 };

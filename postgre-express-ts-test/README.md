@@ -4,7 +4,7 @@ $ npm init -y
 $ npm i express pg-promise
 $ npm i -D nodemon typescript ts-node
 $ npx tsc --init
-$ npm i -D @types/express @types/pg-promise
+$ npm i -D @types/express @types/pg-promise @types/aws-lambda
 ```
 
 ## package.json 修正
@@ -28,9 +28,9 @@ $ npm i -D @types/express @types/pg-promise
 
 ## postgresql
 ```
-$ psql -h localhost -p 5432 -U postgres -d postgres -f ../web-form/db/init.sql
+$ psql -h localhost -p 5432 -U postgres -d postgres -f ./db/init.sql
 
-$ psql -h localhost -p 5432 -U postgres -d postgres -f ../web-form/db/insert_test_data.sql
+$ psql -h localhost -p 5432 -U postgres -d postgres -f ./db/insert_test_data.sql
 
 $ psql -h localhost -p 5432 -U postgres -d postgres
 

@@ -1,3 +1,4 @@
+import { APIGatewayProxyEventQueryStringParameters } from 'aws-lambda';
 import * as pgPromise from 'pg-promise';
 import * as pg from 'pg-promise/typescript/pg-subset';
 import {
@@ -5,9 +6,36 @@ import {
   Question,
   QuestionItem,
   QuestionGroupByItem,
-  GroupedQuestion,
-  GetResponse
+  GroupedQuestion
 } from './interface/Question';
+import { GetResponse } from './interface/Response';
+
+const isInt = (x: any): boolean => {
+  return typeof x === 'number' && x % 1 === 0;
+};
+
+const convertStringToNumber = (
+  numberString: string,
+  min: number,
+  max?: number
+): number => {
+  const number = Number(numberString);
+  if (number < min || !isInt(number) || (max !== undefined && number > max)) {
+    throw new Error('不正なパラメータが指定されました。');
+  }
+
+  return number;
+};
+
+const convertStringToBoolean = (boolString?: string): boolean => {
+  if (boolString === undefined || boolString === 'false') {
+    return false;
+  } else if (boolString === 'true') {
+    return true;
+  } else {
+    throw new Error('不正なパラメータが指定されました。');
+  }
+};
 
 export const fetchQuestions = async (
   db: pgPromise.IDatabase<Record<string, never>, pg.IClient>,
@@ -15,11 +43,14 @@ export const fetchQuestions = async (
   isAll: boolean
 ): Promise<GetResponse> => {
   const query: string =
-    'SELECT q.id, q.question, q.required, q.headline, q.questionnair_id, q.can_inherit, i.item_name AS item, i.id AS item_id, i.is_discription, t.question_type AS type, g.name AS group, q.group_id, q.is_deleted AS is_question_deleted, i.is_deleted AS is_item_deleted, q.priority ' +
-    'FROM questions AS q INNER JOIN question_items AS i ON q.id = i.question_id ' +
-    'INNER JOIN question_types AS t ON q.question_type_id = t.id LEFT JOIN question_groups AS g ON q.group_id = g.id ' +
+    'SELECT q.id, q.question, q.required, q.headline, q.questionnair_id, q.can_inherit, i.item_name AS item, i.id AS item_id, i.is_description, t.question_type AS type, g.name AS group, q.group_id, q.is_deleted AS is_question_deleted, i.is_deleted AS is_item_deleted, q.priority FROM questions AS q ' +
+    'LEFT JOIN question_items AS i ON q.id = i.question_id ' +
+    'INNER JOIN question_types AS t ON q.question_type_id = t.id ' +
+    'LEFT JOIN question_groups AS g ON q.group_id = g.id ' +
     `WHERE q.questionnair_id = $1 ${
-      isAll ? '' : 'AND NOT q.is_deleted AND NOT i.is_deleted'
+      isAll
+        ? ''
+        : 'AND NOT q.is_deleted AND (i.is_deleted IS NULL or i.is_deleted IS FALSE)'
     } ` +
     'ORDER BY q.priority, i.priority;';
 
@@ -54,20 +85,23 @@ const groupByItem = (
   fetchedQuestions: FetchedQuestion[]
 ): QuestionGroupByItem[] => {
   return ids.map((id: number): QuestionGroupByItem => {
-    // id毎に選択肢をまとめる
-    const items: QuestionItem[] = fetchedQuestions
-      .filter((fetched: FetchedQuestion) => fetched.id === id)
-      .map((fetched: FetchedQuestion) => ({
-        id: fetched.item_id,
-        name: fetched.item,
-        isDiscription: fetched.is_discription,
-        isDeleted: fetched.is_item_deleted
-      }));
-
     // 共通データの代表値として、0番目のデータを取得
     const representative: FetchedQuestion = fetchedQuestions.filter(
       (fetched: FetchedQuestion) => fetched.id === id
     )[0];
+
+    // id毎に選択肢をまとめる
+    const items: QuestionItem[] | undefined =
+      representative.type === 'text' || representative.type === 'number'
+        ? undefined
+        : fetchedQuestions
+            .filter((fetched: FetchedQuestion) => fetched.id === id)
+            .map((fetched: FetchedQuestion) => ({
+              id: fetched.item_id!,
+              name: fetched.item!,
+              isDescription: fetched.is_description!,
+              isDeleted: fetched.is_item_deleted!
+            }));
 
     return {
       id,
@@ -144,4 +178,44 @@ const groupByGroup = (
   const questions: Question[] = deleteGroup(questionNotHaveGroup);
 
   return sortQuestionsById([...groupedQuestions, ...questions]);
+};
+
+export const createGetResponseBody = async (
+  queryStringParameters: APIGatewayProxyEventQueryStringParameters,
+  db: pgPromise.IDatabase<Record<string, never>, pg.IClient>
+): Promise<{ statusCode: number; body: object }> => {
+  if (queryStringParameters!.questionnairId === undefined) {
+    const body = { message: 'アンケートのIDが指定されていません。' };
+    return { statusCode: 400, body };
+  }
+
+  try {
+    const questionnairId: number = convertStringToNumber(
+      queryStringParameters.questionnairId,
+      1
+    );
+    const isAll: boolean = convertStringToBoolean(queryStringParameters.isAll);
+
+    const questions: GetResponse = await fetchQuestions(
+      db,
+      questionnairId,
+      isAll
+    );
+    const body = { message: 'success', questions };
+    return { statusCode: 200, body };
+  } catch (e) {
+    if (
+      e instanceof Error &&
+      e.message === '不正なパラメータが指定されました。'
+    ) {
+      const body = { message: e.message };
+      return { statusCode: 400, body };
+    }
+
+    console.error(e);
+    return {
+      statusCode: 500,
+      body: { message: '予期せぬエラーが発生しました。' }
+    };
+  }
 };

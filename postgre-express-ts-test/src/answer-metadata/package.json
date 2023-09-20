@@ -1,5 +1,5 @@
 {
-  "name": "question",
+  "name": "answer-metadata",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,6 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "@types/aws-lambda": "^8.10.119",
-    "pg-promise": "^11.5.0"
+    "pg-promise": "^11.5.4"
   }
 }

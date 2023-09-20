@@ -1,64 +1,86 @@
 import { db } from './db';
-import { fetchQuestions } from './question/get';
-import { GetResponse } from './question/interface/Question';
+import { createGetResponseBody as createQuestionGetResponseBody} from './question/get';
+import { createPostResponseBody as  createQuestionPostResponseBody} from './question/post';
+import { createPutResponseBody as createQuestionPutResponseBody} from './question/put';
+import { APIGatewayProxyEventQueryStringParameters } from 'aws-lambda';
 
-import { insertAnswers } from './answer/post';
-import { Answer, DbAnswer } from './answer/interface/Answer';
-import { PostEventBody, PostedAnswer } from './answer/interface/EventBody';
+import { createPostResponseBody } from './answer/post';
+import { createGetResponseBody } from './answer/get';
+import { createPutResponseBody } from './answer/put';
+import { createChunkPostResponseBody } from './answer/chunk-post';
+import { createChunkPutResponseBody } from './answer/chunk-put';
+import { PostEventBody } from './answer/interface/EventBody';
 
-import express, { NextFunction, Request, Response } from "express";
+import { createGetResponseBody as  createGetResponseBody2} from './answer-metadata/get';
+
+import { createGetResponseBody as  createGetResponseBody3} from './questionnair/get';
+import { createGetOneResponseBody } from './questionnair/get-one';
+
+import * as express from "express";
+import { NextFunction, Request, Response } from "express"
 const app = express();
 
 app.use(express.json());
 
-const isInt = (x: any): boolean => {
-  return typeof x === 'number' && x % 1 === 0;
-};
 
-app.get("/question", async (req: Request, res: Response, next: NextFunction) => {
+app.use("/question", async (req: Request, res: Response, next: NextFunction) => {
 
-
-  let questionnairId: number = 0;
-  let isAll: boolean = false;
-  if (req.query!.questionnairId === undefined) {
-    const body = { message: 'アンケートのIDが指定されていません。' };
-    //return createResponse(400, body);
-    return res.status(400).json(body);
+  if (
+    (req.method === 'GET' && !req.query) ||
+    ((req.method === 'POST' || req.method === 'PUT') && !req.body)
+  ) {
+    //return createResponse(400, { message: 'データを指定してください。' });
+    return res.status(400).json({ message: 'データを指定してください。' });
   }
 
   try {
-    questionnairId = Number(req.query!.questionnairId);
-    if (questionnairId < 1 || !isInt(questionnairId)) {
-      throw new Error('不正なパラメータが指定されました。');
-    }
-
-    if (
-      req.query!.isAll === undefined ||
-      req.query!.isAll === 'false'
-    ) {
-      isAll = false;
-    } else if (req.query!.isAll === 'true') {
-      isAll = true;
+    if (req.method === 'GET') {
+      const getResponse = await createQuestionGetResponseBody(
+        req.query! as APIGatewayProxyEventQueryStringParameters,
+        db
+      );
+      //return createResponse(getResponse.statusCode, getResponse.body);
+      return res.status(getResponse.statusCode).json(getResponse.body);
+    } else if (req.method === 'POST') {
+      const postResponse = await createQuestionPostResponseBody(
+        JSON.parse(req.body!),
+        db
+      );
+      //return createResponse(postResponse.statusCode, postResponse.body);
+      return res.status(postResponse.statusCode).json(postResponse.body);
     } else {
-      throw new Error('不正なパラメータが指定されました。');
+      const putResponse = await createQuestionPutResponseBody(
+        JSON.parse(req.body!),
+        db
+      );
+      //return createResponse(putResponse.statusCode, putResponse.body);
+      return res.status(putResponse.statusCode).json(putResponse.body);
     }
-  } catch (e) {
-    console.error(e);
-    const body = { message: '不正なパラメータが指定されました。' };
-    //return createResponse(400, body);
-    return res.status(400).json(body);
+  } catch (error) {
+    console.error(error);
+    const body = { message: 'error' };
+    //return createResponse(500, body);
+    return res.status(500).json(body);
   }
 
+});
+
+app.use("/answer/:metadataId", async (req: Request, res: Response, next: NextFunction) => {
+
+  if (
+    req.method === 'GET' &&
+    (! req.params ||
+    ! req.params!.metadataId)
+  ) {
+    //return createResponse(400, { message: 'データを指定してください。' });
+    return res.status(400).json({ message: 'データを指定してください。' });
+  }
 
   try {
-    const questions: GetResponse = await fetchQuestions(
-      db,
-      questionnairId,
-      isAll
-    );
-    const body = { message: 'success', questions };
-   // return createResponse(200, body);
-   return res.status(200).json(body);
+    const metadataId = Number(req.params!.metadataId);
+    const getResponse = await createGetResponseBody2(metadataId, db);
+    //return createResponse(getResponse.statusCode, getResponse.body);
+    return res.status(getResponse.statusCode).json(getResponse.body);
   } catch (error) {
     console.error(error);
     const body = { message: 'error' };
@@ -69,41 +91,108 @@ app.get("/question", async (req: Request, res: Response, next: NextFunction) => 
 });
 
 
+app.use("/answer", async (req: Request, res: Response, next: NextFunction) => {
 
-app.post("/answer", async (req: Request, res: Response, next: NextFunction) => {
-
-  const eventBody: PostEventBody = JSON.parse(req.body);
-  const date = new Date();
-  const answersPerQuestion: DbAnswer[] = eventBody.answers.map(
-    (answer: PostedAnswer): DbAnswer => ({
-      question_id: answer.questionId,
-      item_id: answer.itemId,
-      other: answer.other !== undefined ? answer.other : ''
-    })
-  );
-  const answer: Answer = {
-    metadata: {
-      created_date: date,
-      updated_date: date,
-      user_id: eventBody.userId,
-      questionnair_id: eventBody.questionnairId
-    },
-    answers: answersPerQuestion
-  };
+  if (
+    (req.method === 'GET' && !req.query) ||
+    ((req.method === 'POST' || req.method === 'PUT') && !req.body)
+  ) {
+    //return createResponse(400, { message: 'データを指定してください。' });
+    return res.status(400).json({ message: 'データを指定してください。' });
+  }
 
   try {
-    const response = await insertAnswers(db, answer);
-    const body = { message: 'success', ...response };
-    //return createResponse(200, body);
-    return res.status(200).json(body);
+    if (req.method === 'POST' && req.path === '/answer/chunk') {
+      const metadataIds: number[] = JSON.parse(req.body!).metadataIds;
+      const chunkPostResponse = await createChunkPostResponseBody(
+        metadataIds,
+        db
+      );
+      // return createResponse(
+      //   chunkPostResponse.statusCode,
+      //   chunkPostResponse.body
+      // );
+      return res.status(chunkPostResponse.statusCode).json(chunkPostResponse.body);
+    } else if (req.method === 'POST') {
+      const eventBody: PostEventBody = JSON.parse(req.body!);
+      const postResponse = await createPostResponseBody(eventBody, db);
+      //return createResponse(postResponse.statusCode, postResponse.body);
+      return res.status(postResponse.statusCode).json(postResponse.body);
+    } else if (req.method === 'GET') {
+      const getResponse = await createGetResponseBody(
+        req.query! as APIGatewayProxyEventQueryStringParameters,
+        db
+      );
+      //return createResponse(getResponse.statusCode, getResponse.body);
+      return res.status(getResponse.statusCode).json(getResponse.body);
+    } else if (req.method === 'PUT' && req.path === '/answer/chunk') {
+      const chunkPutResponse = await createChunkPutResponseBody(
+        JSON.parse(req.body!),
+        db
+      );
+      //return createResponse(chunkPutResponse.statusCode, chunkPutResponse.body);
+      return res.status(chunkPutResponse.statusCode).json(chunkPutResponse.body);
+    } else {
+      const putResponse = await createPutResponseBody(
+        JSON.parse(req.body!),
+        db
+      );
+      //return createResponse(putResponse.statusCode, putResponse.body);
+      return res.status(putResponse.statusCode).json(putResponse.body);
+    }
   } catch (error) {
     console.error(error);
     const body = { message: 'error' };
-    //return createResponse(400, body);
-    return res.status(400).json(body);
+    //return createResponse(500, body);
+    return res.status(500).json(body);
   }
 
+
 });
+
+const questionnairHandle = async (req: Request, res: Response, next: NextFunction) => {
+
+  if (
+    req.method === 'GET' &&
+    !req.query &&
+    !req.params
+  ) {
+    //return createResponse(400, { message: 'データを指定してください。' });
+    return res.status(400).json({ message: 'データを指定してください。' });
+  }
+
+  try {
+
+    if (
+      req.params !== null &&
+      req.params.questionnairId !== undefined
+    ) {
+      const getOneResponse = await createGetOneResponseBody(
+        Number(req.params.questionnairId),
+        db
+      );
+      //return createResponse(getOneResponse.statusCode, getOneResponse.body);
+      return res.status(getOneResponse.statusCode).json(getOneResponse.body);
+    }
+
+    const getResponse = await createGetResponseBody3(
+      req.query! as APIGatewayProxyEventQueryStringParameters,
+      db
+    );
+    //return createResponse(getResponse.statusCode, getResponse.body);
+    return res.status(getResponse.statusCode).json(getResponse.body);
+  } catch (error) {
+    console.error(error);
+    const body = { message: 'error' };
+    //return createResponse(500, body);
+    return res.status(500).json(body);
+  }
+
+}
+
+app.use("/questionnair/:questionnairId", questionnairHandle);
+
+app.use("/questionnair", questionnairHandle);
 
 
 app.listen("3000", (): void => {
