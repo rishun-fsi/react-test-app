@@ -6,7 +6,7 @@ const connection = {
     user: 'postgres',
     host: 'localhost',
     password: 'postgre',
-    database: 'users',
+    database: 'postgres',
     port: 5432
 };
  
