@@ -1,0 +1,1077 @@
+openapi: 3.0.0
+info:
+  title: PJ健康診断アンケートWebフォーム API
+  version: 0.1.0
+
+servers:
+  - url: 'https://w57zbenh6e.execute-api.ap-northeast-1.amazonaws.com/prod'
+    description: 'dev'
+
+paths:
+  /answer:
+    get:
+      summary: アンケートの回答一覧の取得
+      parameters:
+        - name: questionnairId
+          description: アンケートのID
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          description: 回答メタデータを取得する行数
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: offset
+          description: 回答メタデータを取得する開始位置
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: アンケートの回答一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Answer'
+                example:
+                  message: success
+                  answers:
+                    headers:
+                      - id: 1
+                        name: システム名
+                      - id: 2
+                        name: 開発手法
+                      - id: 3
+                        name: サーバーの土台
+                        items:
+                          - id: 6
+                            name: AWS
+                          - id: 7
+                            name: GCP
+                          - id: 8
+                            name: Azure
+                          - id: 9
+                            name: ドコモ内オンプレ
+                          - id: 10
+                            name: その他
+                      - id: 4
+                        name: 変更のリードタイム
+                      - id: 5
+                        name: 削除済み質問
+                    answers:
+                      - answer:
+                          - id: 1
+                            itemId: 1
+                            itemName: システムA
+                          - id: 2
+                            itemId: 4
+                            itemName: アジャイル
+                          - id: 3
+                            itemId: 8
+                            itemName: Azure
+                          - id: 4
+                            itemId: 12
+                            itemName: 1日以内
+                          - id: 5
+                            textAnswer: はい
+                        metadataId: 3
+                        answeredDate: '2023-07-21'
+                        userId: userA
+                        updateUser: userB
+                        updatedDate: '2023-08-01'
+                      - answer:
+                          - id: 1
+                            itemId: 2
+                            itemName: システムB
+                          - id: 2
+                            itemId: 5
+                            itemName: ウォーターフォール
+                          - id: 4
+                            itemId: 14
+                            itemName: それ以上
+                          - id: 5
+                            textAnswer: いいえ
+                        metadataId: 4
+                        answeredDate: '2023-07-30'
+                        userId: userC
+                        updateUser: userD
+                        updatedDate: '2023-08-30'
+        '400':
+          description: 不正なパラメータによるエラーの発生
+        '500':
+          description: サーバー側の予期せぬエラーの発生
+    post:
+      summary: 回答の保存
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Answer'
+            example:
+              answers:
+                - questionId: 1
+                  itemId: 1
+                - questionId: 2
+                  itemId: 2
+                  textAnswer: sample
+              userId: hideaki.azuma.ra@nttcom.co.jp
+              questionnairId: 1
+      responses:
+        '200':
+          description: 正常に回答を保存できた
+        '400':
+          description: エラー発生
+    put:
+      summary: 回答を編集
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerPutRequest'
+            example:
+              answers:
+                existing:
+                  - answerId: 1
+                    itemId: 1
+                  - answerId: 2
+                    textAnswer: test
+                new:
+                  - questionId: 3
+                    itemId: 3
+                    textAnswer: sample
+                delete:
+                  - 1
+                  - 2
+              userId: hideaki.azuma.ra@nttcom.co.jp
+              questionnairId: 1
+              metadataId: 1
+      responses:
+        '200':
+          description: 正常に回答を更新できた
+        '400':
+          description: 入力起因のエラーが発生した
+        '500':
+          description: 予期せぬエラーが発生した
+  /answer/{metadataId}:
+    get:
+      summary: 特定の回答メタデータIDから回答データを取得
+      parameters:
+        - name: metadataId
+          description: アンケートの回答メタデータID
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: アンケートの特定の回答メタデータに対する回答データ
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/AnswerMetadata'
+                example:
+                  message: success
+                  answers:
+                    - answerId: 1
+                      questionId: 1
+                      itemId: 1
+                      textAnswer: はい
+                    - answerId: 2
+                      questionId: 2
+                      itemId: 4
+        '400':
+          description: 不正なパラメータによるエラーの発生
+        '500':
+          description: サーバー側の予期せぬエラーの発生
+  /answer/chunk:
+    post:
+      summary: 複数のmetadataIdから回答を複数取得する
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerChunkPostRequest'
+            example:
+              metadataIds:
+                - 1
+                - 3
+                - 4
+                - 5
+      responses:
+        '200':
+          description: 正常に回答が取得できた
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/AnswerChunkPostResponse'
+                example:
+                  message: success
+                  answers:
+                    - metadataId: 1
+                      questionnairId: 1
+                      userId: hideaki.azuma.ra@nttcom.co.jp
+                      createdDate: '2023-09-12'
+                      updatedDate: '2023-09-12'
+                      answers:
+                        - answerId: 1
+                          questionId: 1
+                          itemId: 1
+                        - answerId: 2
+                          questionId: 2
+                          textAnswer: sample
+        '400':
+          description: 不正なパラメータによるエラーの発生
+        '500':
+          description: サーバー側の予期せぬエラーの発生
+    put:
+      summary: まとめて回答をアップサートする
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerChunkPutRequest'
+            example:
+              answers:
+                - existing:
+                    - answerId: 1
+                      itemId: 1
+                    - answerId: 2
+                      textAnswer: test
+                  new:
+                    - questionId: 3
+                      itemId: 3
+                      textAnswer: sample
+                  metadataId: 1
+                - existing:
+                  - answerId: 5
+                    itemId: 2
+                  metadataId: 2
+                  delete:
+                    - 10
+                - new:
+                  - questionId: 3
+                    itemId: 4
+                  - questionId: 5
+                    textAnswer: sample
+              userId: hideaki.azuma.ra@nttcom.co.jp
+              questionnairId: 1
+      responses:
+        '200':
+          description: 正常に回答を保存できた
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/AnswerChunkPutResponse'
+                example:
+                  message: success
+                  edited:
+                    - 1
+                    - 3
+                  inserted:
+                    - 10
+                    - 11
+        '400':
+          description: エラー発生
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/AnswerChunkPutResponse'
+                example:
+                  message: ID1のデータ編集に失敗しました。
+        '500':
+          description: サーバー側の予期せぬエラーの発生
+  /question:
+    get:
+      summary: アンケートの質問を取得
+      parameters:
+        - name: questionnairId
+          description: アンケートのID
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: isAll
+          description: 削除された質問も含めて全ての質問を取得するかのフラグ
+          in: query
+          required: true
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: アンケートの設問
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Question'
+                example:
+                  message: success
+                  questions:
+                    - id: 1
+                      question: システム名を選択してください。
+                      type: select
+                      required: true
+                      headline: システム名
+                      items:
+                        - id: 1
+                          name: システムA
+                          isDescription: true
+                          isDeleted: false
+                        - id: 2
+                          name: システムB
+                          isDescription: false
+                      isDeleted: false
+                      priority: 1
+                    - groupId: 1
+                      group: 開発環境
+                      questions:
+                        - id: 2
+                          question: 開発手法を選択してください。
+                          type: radio
+                          required: true
+                          headline: 開発手法
+                          items:
+                            - id: 3
+                              name: アジャイル
+                              isDescription: false
+                              isDeleted: false
+                            - id: 4
+                              name: ウォーターフォール
+                              isDescription: false
+                              isDeleted: false
+                          isDeleted: false
+                          priority: 2
+                        - id: 3
+                          question: サーバーの土台を選択してください。
+                          type: check
+                          required: false
+                          headline: サーバーの土台
+                          items:
+                            - id: 5
+                              name: AWS
+                              isDescription: false
+                              isDeleted: false
+                            - id: 6
+                              name: その他
+                              isDescription: true
+                              isDeleted: false
+                          isDeleted: false
+                          priority: 3
+        '400':
+          description: 不正なパラメータによるエラーの発生
+        '500':
+          description: サーバー側の予期せぬエラーの発生
+    post:
+      summary: アンケートの新規作成
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionPostRequest'
+            example:
+              userId: hideaki.azuma.ra@nttcom.co.jp
+              name: 新アンケート
+              inheritance:
+                isSameUser: true
+                questionIndex: 0
+              questions:
+                - question: 開発手法を選択してください。
+                  type: radio
+                  required: true
+                  headline: 開発手法
+                  canInherit: true
+                  items:
+                    - name: アジャイル
+                      isDescription: false
+                    - name: ウォーターフォール
+                      isDescription: false
+      responses:
+        '200':
+          description: 正常に新規アンケートを保存できた
+        '400':
+          description: 不正なパラメータなど、呼び出しが不正な場合
+        '500':
+          description: サーバー側でエラーが発生した
+    put:
+      summary: アンケートの編集
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionPutRequest'
+            example:
+              questionnairName: アンケート名
+              questionaniarId: 1
+              existing:
+                - id: 1
+                  type: select
+                  question: 質問の本文
+                  required: true
+                  headline: 見出し
+                  canInherit: true
+                  isDeleted: false
+                  priority: 1
+                  items:
+                    existing:
+                      - id: 1
+                        name: 既存の選択肢名
+                        isDescription: false
+                        priority: 1
+                        isDeleted: false
+                    new:
+                      - name: 新規の選択肢名
+                        isDescription: true
+                        priority: 2
+              new:
+                - type: radio
+                  question: 新規の質問の本文
+                  required: false
+                  headline: 見出し
+                  canInherit: true
+                  priority: 2
+                  items:
+                    - name: 選択肢1
+                      isDescription: true
+                      priority: 1
+              inheritance:
+                isSameUser: true
+                questionId: 1
+      responses:
+        '200':
+          description: 正常に新規アンケートを保存できた
+        '400':
+          description: 不正なパラメータなど、呼び出しが不正な場合
+        '500':
+          description: サーバー側でエラーが発生した
+  /questionnair:
+    get:
+      summary: アンケートのリストを取得
+      parameters:
+        - name: isAll
+          description: 削除された質問も含めて全ての質問を取得するかのフラグ
+          in: query
+          required: true
+          schema:
+            type: boolean
+        - name: limit
+          description: 何件取得するかを指定する（最大100件まで）
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: offset
+          description: 何件目から取得するかを指定する（0が指定された場合は1件目から取得）
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: アンケートのリスト
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Questionnair'
+                example:
+                  message: success
+                  totalCount: 2
+                  questionnairs:
+                    items:
+                      - id: 1
+                        name: プロダクト健康診断
+                        userId: hideaki.azuma.ra@nttcom.co.jp
+                        createdDate: '2023-08-15'
+                        updatedDate: '2023-08-15'
+                        isDeleted: false
+                      - id: 2
+                        name: アンケート2
+                        userId: hideaki.azuma.ra@nttcom.co.jp
+                        createdDate: '2023-08-15'
+                        updatedDate: '2023-08-15'
+                        isDeleted: false
+        '400':
+          description: 不正なパラメータによるエラーの発生
+        '500':
+          description: サーバー側の予期せぬエラーの発生
+  /questionnair/{questionnairId}:
+    get:
+      summary: アンケートのリストを取得
+      parameters:
+        - name: questionnairId
+          description: アンケートのID
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 指定されたアンケートIDのアンケート情報
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/OneQuestionnair'
+                example:
+                  message: success
+                  questionnair:
+                    id: 1
+                    name: プロダクト健康診断
+                    userId: hideaki.azuma.ra@nttcom.co.jp
+                    createdDate: '2023-08-15'
+                    updatedDate: '2023-08-15'
+                    isDeleted: false
+        '400':
+          description: 不正なパラメータによるエラーの発生
+        '500':
+          description: サーバー側の予期せぬエラーの発生
+
+components:
+  schemas:
+    Answer:
+      type: object
+      required:
+        - answers
+        - userId
+        - questionnairId
+      properties:
+        answers:
+          type: array
+          items:
+            type: object
+            required:
+              - questionId
+            properties:
+              questionId:
+                type: integer
+                description: 質問のID
+              itemId:
+                type: integer
+                description: 選択肢のID
+              textAnswer:
+                type: string
+                description: 記述式の設問の回答
+        userId:
+          type: string
+          description: ユーザーID
+        questionnairId:
+          type: integer
+          description: アンケートのID
+    AnswerMetadata:
+      type: object
+      properties:
+        message:
+          type: string
+          description: システムメッセージ
+        answers:
+          type: array
+          items:
+            type: object
+            required:
+              - questionId
+              - answerId
+            properties:
+              answerId:
+                type: integer
+                description: 回答のID
+              questionId:
+                type: integer
+                description: 質問のID
+              itemId:
+                type: integer
+                description: 選択肢のID
+              textAnswer:
+                type: string
+                description: 記述式の設問の回答
+    AnswerPutRequest:
+      type: object
+      required:
+        - answers
+        - userId
+        - questionnairId
+      properties:
+        answers:
+          type: object
+          properties:
+            existing:
+              type: object
+              required:
+                - answerId
+                - questionId
+              properties:
+                answerId:
+                  type: integer
+                  description: 回答のID
+                itemId:
+                  type: integer
+                  description: 選択肢のID
+                textAnswer:
+                  type: string
+                  description: 記述式の質問の回答
+            new:
+              type: object
+              required:
+                - questionId
+              properties:
+                questionId:
+                  type: integer
+                  description: 質問のID
+                itemId:
+                  type: integer
+                  description: 選択肢のID
+                textAnswer:
+                  type: string
+                  description: 記述式の質問の回答
+            delete:
+              type: array
+              items:
+                type: integer
+        userId:
+          type: string
+          description: ユーザーID
+        questionnairId:
+          type: integer
+          description: アンケートのID
+        metadataId:
+          type: integer
+          description: 回答のメタデータのID
+    AnswerChunkPostRequest:
+      type: object
+      required:
+        - metadataIds
+      properties:
+        metadataIds:
+          type: array
+          items:
+            type: integer
+            description: 回答を取得するメタデータID
+    AnswerChunkPostResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: システムメッセージ
+        answers:
+          type: array
+          items:
+            type: object
+            properties:
+              metadataId:
+                type: integer
+                description: 回答のメタデータID
+              questionnairId:
+                type: integer
+                description: アンケートのID
+              createdDate:
+                type: string
+                description: 回答の作成日
+              updatedDate:
+                type: string
+                description: 回答の更新日
+              userId:
+                type: string
+                description: 回答したユーザーのID
+              updateUser:
+                type: string
+                description: 回答を更新したユーザーのID
+              answers:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    answerId:
+                      type: integer
+                      description: 回答のID
+                    questionId:
+                      type: integer
+                      description: 質問のID
+                    itemId:
+                      type: integer
+                      description: 選択肢のID
+                    textAnswer:
+                      type: string
+                      description: 記述式の回答
+    AnswerChunkPutRequest:
+      type: object
+      required:
+        - answers
+        - userId
+        - questionnairId
+      properties:
+        answers:
+          type: array
+          items:
+            type: object
+            properties:
+              existing:
+                type: object
+                required:
+                  - answerId
+                  - questionId
+                properties:
+                  answerId:
+                    type: integer
+                    description: 回答のID
+                  questionId:
+                    type: integer
+                    description: 質問のID
+                  itemId:
+                    type: integer
+                    description: 選択肢のID
+                  textAnswer:
+                    type: string
+                    description: 記述式の質問の回答
+              new:
+                type: object
+                required:
+                  - questionId
+                properties:
+                  questionId:
+                    type: integer
+                    description: 質問のID
+                  itemId:
+                    type: integer
+                    description: 選択肢のID
+                  textAnswer:
+                    type: string
+                    description: 記述式の質問の回答
+              delete:
+                type: array
+                items:
+                  type: integer
+                  description: 削除する質問のID
+              metadataId:
+                type: integer
+                description: 回答のメタデータのID
+        userId:
+          type: string
+          description: ユーザーID
+        questionnairId:
+          type: integer
+          description: アンケートのID
+    AnswerChunkPutResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: システムメッセージ(エラーの場合はエラーメッセージ)
+        edited:
+          type: array
+          items:
+            type: integer
+            description: 編集した質問のID
+        inserted:
+          type: array
+          items:
+            type: integer
+            description: 追加した質問のID
+    Question:
+      type: object
+      properties:
+        message:
+          type: string
+          description: システムメッセージ
+        questions:
+          type: array
+          items:
+            type: object
+            description: 単体の質問、またはグルーピングされた質問
+    QuestionPostRequest:
+      type: object
+      required:
+        - userId
+        - name
+        - questions
+      properties:
+        userId:
+          type: string
+          description: ユーザーID
+        name:
+          type: string
+          description: アンケート名
+        inheritance:
+          type: object
+          required:
+            - isSameUser
+          properties:
+            isSameUser:
+              type: boolean
+              description: 同一ユーザーの前回回答のみを参照するかのフラグ
+            questionIndex:
+              type: integer
+              description: どの質問を元に前回回答を反映させるかを決定するための質問の添え字
+        questions:
+          type: array
+          items:
+            type: object
+            required:
+              - question
+              - type
+              - required
+              - headline
+              - canInherit
+            properties:
+              question:
+                type: string
+                description: 質問の本文
+              type:
+                type: string
+                description: 質問のタイプ
+              required:
+                type: boolean
+                description: 質問が必須であるかどうかのフラグ
+              headline:
+                type: string
+                description: 質問の見出し
+              canInherit:
+                type: boolean
+                description: 前回回答を反映するかどうかのフラグ
+              items:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - name
+                    - isDescription
+                  properties:
+                    name:
+                      type: string
+                      description: 質問の選択肢名
+                    isDescription:
+                      type: boolean
+                      description: この選択肢が記述式であるかどうかのフラグ
+    QuestionPutRequest:
+      type: object
+      required:
+        - questionnairName
+        - questionnairId
+      properties:
+        questionnairName:
+          type: string
+          description: アンケート名
+        questionnairId:
+          type: integer
+          description: アンケートのID
+        existing:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - type
+              - question
+              - required
+              - headline
+              - canInherit
+              - isDeleted
+              - priority
+            properties:
+              id:
+                type: integer
+                description: 質問のID
+              type:
+                type: string
+                description: 質問のタイプ
+              question:
+                type: string
+                description: 質問の本文
+              required:
+                type: boolean
+                description: 必須の質問であるかどうかのフラグ
+              headline:
+                type: string
+                description: 見出し
+              canInherit:
+                type: boolean
+                description: 質問が前回の回答を反映できるかどうかのフラグ
+              isDeleted:
+                type: boolean
+                description: 論理削除のフラグ
+              priority:
+                type: integer
+                description: 質問の順序
+              items:
+                type: object
+                properties:
+                  existing:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                        - isDescription
+                        - priority
+                        - isDeleted
+                      properties:
+                        id:
+                          type: integer
+                          description: 選択肢のID
+                        name:
+                          type: string
+                          description: 選択肢名
+                        isDescription:
+                          type: boolean
+                          description: 記述式であるかどうかのフラグ
+                        priority:
+                          type: integer
+                          description: 選択肢の表示順
+                        isDeleted:
+                          type: boolean
+                          description: 論理削除のフラグ
+                  new:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - name
+                        - isDescription
+                        - priority
+                      properties:
+                        name:
+                          type: string
+                          description: 選択肢名
+                        isDescription:
+                          type: boolean
+                          description: 記述式であるかどうかのフラグ
+                        priority:
+                          type: integer
+                          description: 選択肢の表示順
+        new:
+          type: array
+          items:
+            type: object
+            required:
+              - type
+              - question
+              - required
+              - headline
+              - canInherit
+              - priority
+            properties:
+              type:
+                type: string
+                description: 質問のタイプ
+              question:
+                type: string
+                description: 質問の本文
+              required:
+                type: boolean
+                description: 質問が必須であるかどうかのフラグ
+              headline:
+                type: string
+                description: 質問の見出し
+              canInherit:
+                type: boolean
+                description: 前回の回答を反映するかどうかのフラグ
+              priority:
+                type: integer
+                description: 質問の表示順
+              items:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - name
+                    - isDescription
+                    - priority
+                  properties:
+                    name:
+                      type: string
+                      description: 選択肢名
+                    isDescription:
+                      type: boolean
+                      description: 記述式であるかどうかのフラグ
+                    priority:
+                      type: integer
+                      description: 選択肢の表示順
+        inheritance:
+          type: object
+          required:
+            - isSameUser
+          properties:
+            isSameUser:
+              type: boolean
+              description: 同一ユーザーの前回回答を反映するかどうかのフラグ
+            questionId:
+              type: integer
+              description: 前回回答の基準とする質問のID（既存の質問を基準とする場合はIDを指定）
+            questionIndex:
+              type: integer
+              description: 前回回答の基準とする質問のID（新規で追加した質問を基準とする場合はインデックスを指定）
+    Questionnair:
+      type: object
+      properties:
+        message:
+          type: string
+          description: システムメッセージ
+        totalCount:
+          type: integer
+          description: 全部で何件のデータが存在するかを示す
+        questionnairs:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: アンケートのID
+              name:
+                type: string
+                description: アンケートの名前
+              userId:
+                type: string
+                description: アンケート作成者のID
+              createdDate:
+                type: string
+                description: アンケートの作成日(yyyy-mm-dd形式)
+              updatedDate:
+                type: string
+                description: アンケートの最終更新日(yyyy-mm-dd形式)
+              isDeleted:
+                type: boolean
+                description: 論理削除のフラグ
+    OneQuestionnair:
+      type: object
+      properties:
+        message:
+          type: string
+          description: システムメッセージ
+        questionnair:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: アンケートのID
+            name:
+              type: string
+              description: アンケートの名前
+            userId:
+              type: string
+              description: アンケート作成者のID
+            createdDate:
+              type: string
+              description: アンケートの作成日(yyyy-mm-dd形式)
+            updatedDate:
+              type: string
+              description: アンケートの最終更新日(yyyy-mm-dd形式)
+            isDeleted:
+              type: boolean
+              description: 論理削除のフラグ

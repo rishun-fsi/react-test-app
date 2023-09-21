@@ -5,6 +5,9 @@ export default defineConfig({
     setupNodeEvents(on, config) {
       // implement node event listeners here
     },
-    baseUrl: 'http://localhost:3000'
+    experimentalModifyObstructiveThirdPartyCode: true,
+    baseUrl: 'http://localhost:3000',
+    pageLoadTimeout: 1000000,
+    defaultCommandTimeout: 10000
   }
 });

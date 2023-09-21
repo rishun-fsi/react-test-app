@@ -6,11 +6,14 @@ phases:
       nodejs: 18
     commands:
       - npm ci
+  pre_build:
+    commands:
+      - aws s3 cp s3://dcm-dx-pj-healthcheck-web-form-env/.env.development ./.env
   build:
     commands:
       - npm run build
   post_build:
-    command:
+    commands:
       - aws cloudfront create-invalidation --distribution-id EZEYH026S25BZ --paths /*
 artifacts:
   files:

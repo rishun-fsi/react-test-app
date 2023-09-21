@@ -51,18 +51,18 @@ CREATE TABLE inheritances(
   id SERIAL,
   questionnair_id INTEGER not null,
   is_same_user BOOLEAN not null DEFAULT TRUE,
-  question_id INTEGER not null,
+  question_id INTEGER,
   primary key(id),
   foreign key(questionnair_id) references questionnairs(id),
   foreign key(question_id) references questions(id),
-  CONSTRAINT question_id_check CHECK(NOT is_same_user OR (is_same_user AND question_id IS NOT NULL))
+  CONSTRAINT question_id_check CHECK(is_same_user OR (NOT is_same_user AND question_id IS NOT NULL))
 );
 
 CREATE TABLE question_items(
   id SERIAL,
   question_id INTEGER not null,
   item_name VARCHAR(200) not null,
-  is_discription BOOLEAN not null DEFAULT FALSE,
+  is_description BOOLEAN not null DEFAULT FALSE,
   is_deleted BOOLEAN not null DEFAULT FALSE,
   priority INTEGER not null,
   primary key(id),
@@ -83,10 +83,12 @@ CREATE TABLE question_conditions(
 
 CREATE TABLE answer_metadata(
   id SERIAL,
-  created_date DATE,
-  user_id VARCHAR(50),
-  updated_date DATE,
-  questionnair_id INTEGER,
+  created_date DATE not null,
+  user_id VARCHAR(50) not null,
+  update_user VARCHAR(50),
+  updated_date DATE not null,
+  questionnair_id INTEGER not null,
+  is_deleted BOOLEAN not null DEFAULT FALSE,
   primary key(id),
   foreign key(questionnair_id) references questionnairs(id)
 );
@@ -94,11 +96,12 @@ CREATE TABLE answer_metadata(
 CREATE TABLE answers(
   id SERIAL,
   question_id INTEGER not null,
-  item_id INTEGER not null,
   metadata_id INTEGER not null,
-  other VARCHAR(500),
+  item_id INTEGER,
+  text_answer VARCHAR(500),
   primary key(id),
   foreign key(question_id) references questions(id),
   foreign key(item_id) references question_items(id),
-  foreign key(metadata_id) references answer_metadata(id)
+  foreign key(metadata_id) references answer_metadata(id),
+  CONSTRAINT answer_null_check CHECK(NOT(item_id IS NULL AND text_answer IS NULL))
 );

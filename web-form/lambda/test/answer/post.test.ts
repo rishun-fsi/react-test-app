@@ -1,5 +1,5 @@
 import { Answer } from '../../answer/interface/Answer';
-import { insertAnswers } from '../../answer/post';
+import { createAnswer } from '../../answer/post';
 import { connectDB } from '../../answer/db';
 import * as pgPromise from 'pg-promise';
 import * as pg from 'pg-promise/typescript/pg-subset';
@@ -18,12 +18,12 @@ const input: Answer = {
     {
       question_id: 1,
       item_id: 1,
-      other: ''
+      text_answer: ''
     },
     {
       question_id: 1,
       item_id: 1,
-      other: ''
+      text_answer: 'test'
     }
   ]
 };
@@ -33,8 +33,8 @@ const db: pgPromise.IDatabase<Record<string, never>, pg.IClient> = connectDB(
   password
 );
 
-test('insetAnswersに正常な入力を与える場合', async () => {
-  const response = await insertAnswers(db, input);
+test('createAnswersに正常な入力を与える場合', async () => {
+  const response = await createAnswer(db, input);
   expect(typeof response.metadataId).toBe('number');
   expect(response.questionnairId).toBe(1);
   expect(response.userId).toBe('test');

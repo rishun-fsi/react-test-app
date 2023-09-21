@@ -20,12 +20,12 @@ export class CodeBuildResourceStack extends Stack {
     const envBucket = s3.Bucket.fromBucketArn(
       scope,
       'env-bucket',
-      'arn:aws:s3:::dcm-dx-pj-helthcheck-web-form-env'
+      'arn:aws:s3:::dcm-dx-pj-healthcheck-web-form-env'
     );
 
     return new iam.Role(
       scope,
-      'dcm-dx-pj-helthcheck-web-form-codebuild-service-role',
+      'dcm-dx-pj-healthcheck-web-form-codebuild-service-role',
       {
         assumedBy: new iam.ServicePrincipal('codebuild.amazonaws.com'),
         path: '/',
@@ -62,6 +62,13 @@ export class CodeBuildResourceStack extends Stack {
                 actions: ['iam:PassRole'],
                 resources: [
                   `arn:aws:iam::${account}:role/cdk-*-role-${account}-${region}`
+                ]
+              }),
+              new iam.PolicyStatement({
+                effect: iam.Effect.ALLOW,
+                actions: ['cloudfront:*Invalidation'],
+                resources: [
+                  `arn:aws:cloudfront::${account}:distribution/EZEYH026S25BZ`
                 ]
               })
             ]

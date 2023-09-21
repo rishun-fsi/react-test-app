@@ -2,7 +2,7 @@ import * as pgPromise from 'pg-promise';
 import * as pg from 'pg-promise/typescript/pg-subset';
 import { fetchQuestions } from '../../question/get';
 import { connectDB } from '../../answer/db';
-import { GetResponse } from '../../question/interface/Question';
+import { GetResponse } from '../../question/interface/Response';
 
 const password: string = process.env['PASSWORD']!;
 const db: pgPromise.IDatabase<Record<string, never>, pg.IClient> = connectDB(
@@ -18,9 +18,9 @@ test('削除されていない質問のみを取得する場合', async () => {
     required: true,
     headline: 'システム名',
     items: [
-      { id: 1, name: 'システムA', isDiscription: false, isDeleted: false },
-      { id: 2, name: 'システムB', isDiscription: false, isDeleted: false },
-      { id: 3, name: 'システムC', isDiscription: false, isDeleted: false }
+      { id: 1, name: 'システムA', isDescription: false, isDeleted: false },
+      { id: 2, name: 'システムB', isDescription: false, isDeleted: false },
+      { id: 3, name: 'システムC', isDescription: false, isDeleted: false }
     ],
     isDeleted: false,
     priority: 1
@@ -36,11 +36,11 @@ test('削除されていない質問のみを取得する場合', async () => {
         required: true,
         headline: '開発手法',
         items: [
-          { id: 4, name: 'アジャイル', isDiscription: false, isDeleted: false },
+          { id: 4, name: 'アジャイル', isDescription: false, isDeleted: false },
           {
             id: 5,
             name: 'ウォーターフォール',
-            isDiscription: false,
+            isDescription: false,
             isDeleted: false
           }
         ],
@@ -54,27 +54,27 @@ test('削除されていない質問のみを取得する場合', async () => {
         required: false,
         headline: 'サーバーの土台',
         items: [
-          { id: 6, name: 'AWS', isDiscription: false, isDeleted: false },
-          { id: 7, name: 'GCP', isDiscription: false, isDeleted: false },
-          { id: 8, name: 'Azure', isDiscription: false, isDeleted: false },
+          { id: 6, name: 'AWS', isDescription: false, isDeleted: false },
+          { id: 7, name: 'GCP', isDescription: false, isDeleted: false },
+          { id: 8, name: 'Azure', isDescription: false, isDeleted: false },
           {
             id: 9,
             name: 'ドコモ内オンプレ',
-            isDiscription: false,
+            isDescription: false,
             isDeleted: false
           },
-          { id: 10, name: 'その他', isDiscription: true, isDeleted: false }
+          { id: 10, name: 'その他', isDescription: true, isDeleted: false }
         ],
         isDeleted: false,
         priority: 3
       }
     ]
   });
-  expect(questions.length).toBe(3);
+  expect(questions.length).toBe(4);
 });
 
 test('削除されている質問を含めて取得する場合', async () => {
   const questions: GetResponse = await fetchQuestions(db, 1, true);
 
-  expect(questions.length).toBe(4);
+  expect(questions.length).toBe(5);
 });

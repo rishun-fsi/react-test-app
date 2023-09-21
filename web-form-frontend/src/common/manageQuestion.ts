@@ -2,116 +2,128 @@ import { Dispatch, SetStateAction, ChangeEvent } from 'react';
 import { SelectChangeEvent } from '@mui/material/Select';
 import {
   NewQuestion,
-  ExistingQuestion,
   NewQuestionItem,
-  ExistingQuestionItem,
-  QuestionType
+  QuestionType,
+  EditingQuestion,
+  EditingQuestionItem,
+  ExistingQuestion,
+  Question,
+  GroupedQuestion,
+  QuestionItem,
+  ExistingQuestionItem
 } from '../interface/Question';
+import { QuestionResponse } from '../interface/Question';
 
 type UpdateType = 'string' | 'boolean';
 
 export const handleSelectChange =
   (
-    questions: (NewQuestion | ExistingQuestion)[],
-    setQuestions: Dispatch<SetStateAction<(NewQuestion | ExistingQuestion)[]>>
+    questions: EditingQuestion[],
+    setQuestions: Dispatch<SetStateAction<EditingQuestion[]>>
   ) =>
   (index: number) =>
   (event: SelectChangeEvent) => {
     const type: QuestionType = event.target.value as QuestionType;
 
-    const updated = questions.map(
-      (question: NewQuestion | ExistingQuestion, i: number) => {
-        if (i !== index) return question;
+    const updated = questions.map((question: EditingQuestion, i: number) => {
+      if (i !== index) return question;
 
-        return { ...question, type };
-      }
-    );
+      return {
+        ...question,
+        type,
+        items:
+          question.items === undefined && type !== 'text' ? [] : question.items
+      };
+    });
 
     setQuestions(updated);
   };
 
 export const addQuestion =
   (
-    questions: (NewQuestion | ExistingQuestion)[],
-    setQuestions: Dispatch<SetStateAction<(NewQuestion | ExistingQuestion)[]>>
+    questions: EditingQuestion[],
+    setQuestions: Dispatch<SetStateAction<EditingQuestion[]>>
   ) =>
+  (setFocusingIndex: Dispatch<SetStateAction<number>>) =>
   (type: QuestionType) =>
   () => {
+    const newQuestionLength: number = questions.filter(
+      (question: EditingQuestion) => !('isDeleted' in question)
+    ).length;
     const newQuestion: NewQuestion = {
+      id: -(newQuestionLength + 1),
       question: '',
       type,
       required: false,
       headline: '',
-      items: [],
+      items: type === 'text' ? undefined : [],
       canInherit: false
     };
 
     const index: number = questions.findIndex(
-      (question: NewQuestion | ExistingQuestion) =>
+      (question: EditingQuestion) =>
         'isDeleted' in question && question.isDeleted
     );
 
     if (index === -1) {
+      setFocusingIndex(questions.length);
       setQuestions([...questions, newQuestion]);
       return;
     }
 
     const copied = [...questions];
     copied.splice(index, 0, newQuestion);
+    setFocusingIndex(index);
     setQuestions(copied);
   };
 
 export const addQuestionItem =
   (
-    questions: (NewQuestion | ExistingQuestion)[],
-    setQuestions: Dispatch<SetStateAction<(NewQuestion | ExistingQuestion)[]>>
+    questions: EditingQuestion[],
+    setQuestions: Dispatch<SetStateAction<EditingQuestion[]>>
   ) =>
   (index: number, newItemName: string) =>
   () => {
-    const items: (NewQuestionItem | ExistingQuestionItem)[] = [
-      ...questions[index].items,
-      { name: newItemName, isDiscription: false }
+    const items: EditingQuestionItem[] = [
+      ...questions[index].items!,
+      { name: newItemName, isDescription: false }
     ];
-    const updated = questions.map(
-      (question: NewQuestion | ExistingQuestion, i: number) => {
-        if (i !== index) return question;
+    const updated = questions.map((question: EditingQuestion, i: number) => {
+      if (i !== index) return question;
 
-        const itemIndex: number = question.items.findIndex(
-          (item: NewQuestionItem | ExistingQuestionItem) =>
-            'isDeleted' in item && item.isDeleted
-        );
+      const itemIndex: number = question.items!.findIndex(
+        (item: EditingQuestionItem) => 'isDeleted' in item && item.isDeleted
+      );
 
-        if (itemIndex === -1) {
-          return { ...question, items };
-        }
-
-        const copiedItem: (NewQuestionItem | ExistingQuestionItem)[] = [
-          ...question.items
-        ];
-        copiedItem.splice(itemIndex, 0, {
-          name: newItemName,
-          isDiscription: false
-        });
-        return { ...question, items: copiedItem };
+      if (itemIndex === -1) {
+        return { ...question, items };
       }
-    );
+
+      const copiedItem: EditingQuestionItem[] = [...question.items!];
+      copiedItem.splice(itemIndex, 0, {
+        name: newItemName,
+        isDescription: false
+      });
+      return { ...question, items: copiedItem };
+    });
 
     setQuestions(updated);
   };
 
 export const switchOrder =
   (
-    questions: (NewQuestion | ExistingQuestion)[],
-    setQuestions: Dispatch<SetStateAction<(NewQuestion | ExistingQuestion)[]>>
+    questions: EditingQuestion[],
+    setQuestions: Dispatch<SetStateAction<EditingQuestion[]>>
   ) =>
+  (setFocusingIndex: Dispatch<SetStateAction<number>>) =>
   (index: number, isUpward: boolean) =>
   () => {
-    const switchTarget: NewQuestion | ExistingQuestion = isUpward
+    const switchTarget: EditingQuestion = isUpward
       ? questions[index - 1]
       : questions[index + 1];
-    const switching: NewQuestion | ExistingQuestion = questions[index];
+    const switching: EditingQuestion = questions[index];
 
-    const switched: (NewQuestion | ExistingQuestion)[] = questions.map(
+    const switched: EditingQuestion[] = questions.map(
       (question: NewQuestion, i: number) => {
         if (index === i) {
           return { ...switchTarget };
@@ -126,6 +138,7 @@ export const switchOrder =
       }
     );
 
+    setFocusingIndex(isUpward ? index - 1 : index + 1);
     setQuestions(switched);
   };
 
@@ -134,16 +147,18 @@ export const deleteNewQuestion =
     questions: NewQuestion[],
     setQuestions: Dispatch<SetStateAction<NewQuestion[]>>
   ) =>
+  (setFocusingIndex: Dispatch<SetStateAction<number>>) =>
   (index: number) =>
   () => {
     const deleted = questions.filter((_, i: number) => i !== index);
+    setFocusingIndex(-1);
     setQuestions(deleted);
   };
 
 export const updateQuestion =
   (
-    questions: (NewQuestion | ExistingQuestion)[],
-    setQuestions: Dispatch<SetStateAction<(NewQuestion | ExistingQuestion)[]>>
+    questions: EditingQuestion[],
+    setQuestions: Dispatch<SetStateAction<EditingQuestion[]>>
   ) =>
   (index: number, key: string, valueType: UpdateType) =>
   (event: ChangeEvent<HTMLInputElement>) => {
@@ -163,22 +178,22 @@ export const updateQuestion =
 
 export const updateQuestionItem =
   (
-    questions: (NewQuestion | ExistingQuestion)[],
-    setQuestions: Dispatch<SetStateAction<(NewQuestion | ExistingQuestion)[]>>
+    questions: EditingQuestion[],
+    setQuestions: Dispatch<SetStateAction<EditingQuestion[]>>
   ) =>
   (questionIndex: number, itemIndex: number, key: string) =>
   (event: ChangeEvent<HTMLInputElement>) => {
     const updatedValue: string | boolean =
       key === 'name' ? (event.target.value as string) : event.target.checked;
-    const updatedItems: (NewQuestionItem | ExistingQuestionItem)[] = questions[
+    const updatedItems: EditingQuestionItem[] = questions[
       questionIndex
-    ].items.map((item: NewQuestionItem, i: number) => {
+    ].items!.map((item: NewQuestionItem, i: number) => {
       if (i !== itemIndex) return item;
 
       return { ...item, [key]: updatedValue };
     });
-    const updated: (NewQuestion | ExistingQuestion)[] = questions.map(
-      (question: NewQuestion | ExistingQuestion, i: number) => {
+    const updated: EditingQuestion[] = questions.map(
+      (question: EditingQuestion, i: number) => {
         if (i !== questionIndex) return question;
 
         return { ...question, items: updatedItems };
@@ -200,9 +215,38 @@ export const deleteNewQuestionItem =
 
       return {
         ...question,
-        items: question.items.filter((_, j: number) => j !== itemIndex)
+        items: question.items!.filter((_, j: number) => j !== itemIndex)
       };
     });
 
     setQuestions(deleted);
   };
+
+export const completelyExpandQuestionResponse = (
+  questionResponse: QuestionResponse
+): ExistingQuestion[] => {
+  const flattened: Question[] = questionResponse
+    .map((question: Question | GroupedQuestion): Question | Question[] => {
+      if ('group' in question) {
+        return question.questions;
+      }
+
+      return question;
+    })
+    .flat();
+
+  return flattened.map(
+    (question: Question): ExistingQuestion => ({
+      ...question,
+      items:
+        question.items !== undefined
+          ? question.items.map(
+              (item: QuestionItem): ExistingQuestionItem => ({
+                ...item
+              })
+            )
+          : undefined,
+      canInherit: false
+    })
+  );
+};

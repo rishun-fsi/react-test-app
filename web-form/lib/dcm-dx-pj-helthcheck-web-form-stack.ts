@@ -4,6 +4,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as rds from 'aws-cdk-lib/aws-rds';
+import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { Construct } from 'constructs';
 import { FrontendS3Resource } from './resources/s3Resource';
 import { RdsResource } from './resources/rdsResources';
@@ -11,6 +12,7 @@ import { DcmDxPjHealthcheckWebFormStackProps } from './interface/dcmDxPjHealthch
 import { LambdaResource } from './resources/lambdaResource';
 import { ApiGatewayResource } from './resources/apiGatewayResource';
 import { CloudFrontResource } from './resources/cloudFrontResource';
+import { CognitoResource } from './resources/cognitoResource';
 
 export class DcmDxPjHealthcheckWebFormStack extends cdk.Stack {
   constructor(
@@ -51,23 +53,64 @@ export class DcmDxPjHealthcheckWebFormStack extends cdk.Stack {
       this,
       'answer'
     );
+    const answerMetadataLambda: lambda.Function =
+      lambdaResource.createResources(this, 'answer-metadata');
     const questionLambda: lambda.Function = lambdaResource.createResources(
       this,
       'question'
     );
+    const questionnairLambda: lambda.Function = lambdaResource.createResources(
+      this,
+      'questionnair'
+    );
+
+    const cognitoResource = new CognitoResource();
+    const userPool: cognito.UserPool = cognitoResource.createResource(this);
 
     const apiGatewayResource = new ApiGatewayResource();
     const apiGateway: apigateway.RestApi = apiGatewayResource.createResources(
       this,
-      'dcm-dx-pj-healthcheck-web-form'
+      'dcm-dx-pj-healthcheck-web-form',
+      userPool
     );
     apiGateway.root
       .addResource('answer')
       .addMethod('POST', new apigateway.LambdaIntegration(answerLambda));
-
+    apiGateway.root
+      .resourceForPath('answer')
+      .addMethod('GET', new apigateway.LambdaIntegration(answerLambda));
+    apiGateway.root
+      .resourceForPath('answer')
+      .addMethod('PUT', new apigateway.LambdaIntegration(answerLambda));
+    apiGateway.root
+      .resourceForPath('answer')
+      .addResource('{metadataId}')
+      .addMethod('GET', new apigateway.LambdaIntegration(answerMetadataLambda));
+    apiGateway.root
+      .resourceForPath('answer')
+      .addResource('chunk')
+      .addMethod('PUT', new apigateway.LambdaIntegration(answerLambda));
+    apiGateway.root
+      .resourceForPath('answer')
+      .resourceForPath('chunk')
+      .addMethod('POST', new apigateway.LambdaIntegration(answerLambda));
     apiGateway.root
       .addResource('question')
       .addMethod('GET', new apigateway.LambdaIntegration(questionLambda));
+    apiGateway.root
+      .resourceForPath('question')
+      .addMethod('POST', new apigateway.LambdaIntegration(questionLambda));
+    apiGateway.root
+      .resourceForPath('question')
+      .addMethod('PUT', new apigateway.LambdaIntegration(questionLambda));
+
+    apiGateway.root
+      .addResource('questionnair')
+      .addMethod('GET', new apigateway.LambdaIntegration(questionnairLambda));
+    apiGateway.root
+      .resourceForPath('questionnair')
+      .addResource('{questionnairId}')
+      .addMethod('GET', new apigateway.LambdaIntegration(questionnairLambda));
   }
 }
 
