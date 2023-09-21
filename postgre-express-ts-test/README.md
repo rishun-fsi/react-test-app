@@ -4,7 +4,8 @@ $ npm init -y
 $ npm i express pg-promise cors dotenv
 $ npm i -D nodemon typescript ts-node
 $ npx tsc --init
-$ npm i -D @types/express @types/pg-promise @types/aws-lambda @types/cors
+$ npm i -D @types/express @types/pg-promise @types/aws-lambda @types/cors @types/jest jest ts-jest
+$ npx ts-jest config:init
 ```
 
 ## package.json 修正

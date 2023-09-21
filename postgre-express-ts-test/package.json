@@ -4,6 +4,7 @@
   "description": "``` $ npm init -y $ npx tsc --init $ npm i express nodemon pg ```",
   "main": "index.js",
   "scripts": {
+    "test": "jest",
     "start": "node ./build/index.js",
     "build": "tsc -p .",
     "dev": "nodemon ./src/index.ts"
@@ -21,8 +22,11 @@
     "@types/aws-lambda": "^8.10.121",
     "@types/cors": "^2.8.14",
     "@types/express": "^4.17.17",
+    "@types/jest": "^29.5.5",
     "@types/pg-promise": "^5.4.3",
+    "jest": "^29.7.0",
     "nodemon": "^3.0.1",
+    "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   }
