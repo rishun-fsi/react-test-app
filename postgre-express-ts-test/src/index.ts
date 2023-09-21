@@ -66,8 +66,7 @@ app.use("/question", async (req: Request, res: Response, next: NextFunction) => 
 
 });
 
-app.use("/answer/:metadataId", async (req: Request, res: Response, next: NextFunction) => {
-
+app.get("/answer/:metadataId", async (req: Request, res: Response, next: NextFunction) => {
   if (
     req.method === 'GET' &&
     (! req.params ||
@@ -91,9 +90,7 @@ app.use("/answer/:metadataId", async (req: Request, res: Response, next: NextFun
 
 });
 
-
-app.use("/answer", async (req: Request, res: Response, next: NextFunction) => {
-
+const answerHandle = async (req: Request, res: Response, next: NextFunction) => {
   if (
     (req.method === 'GET' && !req.query) ||
     ((req.method === 'POST' || req.method === 'PUT') && !req.body)
@@ -101,10 +98,10 @@ app.use("/answer", async (req: Request, res: Response, next: NextFunction) => {
     //return createResponse(400, { message: 'データを指定してください。' });
     return res.status(400).json({ message: 'データを指定してください。' });
   }
-
   try {
-    if (req.method === 'POST' && req.path === '/answer/chunk') {
+    if (req.method === 'POST' && req.path === '/chunk') {
       const metadataIds: number[] = req.body!.metadataIds;
+      console.log(metadataIds);
       const chunkPostResponse = await createChunkPostResponseBody(
         metadataIds,
         db
@@ -126,7 +123,7 @@ app.use("/answer", async (req: Request, res: Response, next: NextFunction) => {
       );
       //return createResponse(getResponse.statusCode, getResponse.body);
       return res.status(getResponse.statusCode).json(getResponse.body);
-    } else if (req.method === 'PUT' && req.path === '/answer/chunk') {
+    } else if (req.method === 'PUT' && req.path === '/chunk') {
       const chunkPutResponse = await createChunkPutResponseBody(
         req.body!,
         db
@@ -147,9 +144,10 @@ app.use("/answer", async (req: Request, res: Response, next: NextFunction) => {
     //return createResponse(500, body);
     return res.status(500).json(body);
   }
+}
 
-
-});
+app.use("/answer", answerHandle);
+app.post("/answer/chunk", answerHandle);
 
 const questionnairHandle = async (req: Request, res: Response, next: NextFunction) => {
 
