@@ -10,8 +10,8 @@ Amplify.configure({
     oauth: {
       domain: 'web-test-app.auth.ap-northeast-1.amazoncognito.com',
       scope: ['openid'],
-      redirectSignIn: 'http://localhost:3000/',
-      redirectSignOut: 'http://localhost:3000/',
+      redirectSignIn: 'http://localhost:3000',
+      redirectSignOut: 'http://localhost:3000',
       responseType: 'code'
     }
   }
