@@ -44,14 +44,14 @@ app.use("/question", async (req: Request, res: Response, next: NextFunction) => 
       return res.status(getResponse.statusCode).json(getResponse.body);
     } else if (req.method === 'POST') {
       const postResponse = await createQuestionPostResponseBody(
-        JSON.parse(req.body!),
+        req.body!,
         db
       );
       //return createResponse(postResponse.statusCode, postResponse.body);
       return res.status(postResponse.statusCode).json(postResponse.body);
     } else {
       const putResponse = await createQuestionPutResponseBody(
-        JSON.parse(req.body!),
+        req.body!,
         db
       );
       //return createResponse(putResponse.statusCode, putResponse.body);
@@ -104,7 +104,7 @@ app.use("/answer", async (req: Request, res: Response, next: NextFunction) => {
 
   try {
     if (req.method === 'POST' && req.path === '/answer/chunk') {
-      const metadataIds: number[] = JSON.parse(req.body!).metadataIds;
+      const metadataIds: number[] = req.body!.metadataIds;
       const chunkPostResponse = await createChunkPostResponseBody(
         metadataIds,
         db
@@ -115,7 +115,7 @@ app.use("/answer", async (req: Request, res: Response, next: NextFunction) => {
       // );
       return res.status(chunkPostResponse.statusCode).json(chunkPostResponse.body);
     } else if (req.method === 'POST') {
-      const eventBody: PostEventBody = JSON.parse(req.body!);
+      const eventBody: PostEventBody = req.body!;
       const postResponse = await createPostResponseBody(eventBody, db);
       //return createResponse(postResponse.statusCode, postResponse.body);
       return res.status(postResponse.statusCode).json(postResponse.body);
@@ -128,14 +128,14 @@ app.use("/answer", async (req: Request, res: Response, next: NextFunction) => {
       return res.status(getResponse.statusCode).json(getResponse.body);
     } else if (req.method === 'PUT' && req.path === '/answer/chunk') {
       const chunkPutResponse = await createChunkPutResponseBody(
-        JSON.parse(req.body!),
+        req.body!,
         db
       );
       //return createResponse(chunkPutResponse.statusCode, chunkPutResponse.body);
       return res.status(chunkPutResponse.statusCode).json(chunkPutResponse.body);
     } else {
       const putResponse = await createPutResponseBody(
-        JSON.parse(req.body!),
+        req.body!,
         db
       );
       //return createResponse(putResponse.statusCode, putResponse.body);

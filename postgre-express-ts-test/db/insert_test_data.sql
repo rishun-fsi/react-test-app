@@ -1,3 +1,5 @@
+\encoding UTF8;
+
 INSERT INTO questionnairs (user_id, name, created_date, updated_date) VALUES ('test', 'PJ健康診断アンケート', '2023-07-21', '2023-07-21');
 INSERT INTO questionnairs (user_id, name, created_date, updated_date) VALUES ('test', 'テストアンケート', '2023-08-15', '2023-08-15');
 INSERT INTO questionnairs (user_id, name, created_date, updated_date, is_deleted) VALUES ('test', '削除済みアンケート', '2023-08-15', '2023-08-15', true);

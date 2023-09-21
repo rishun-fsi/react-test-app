@@ -1,3 +1,5 @@
+\encoding UTF8;
+
 DROP TABLE IF EXISTS answers;
 DROP TABLE IF EXISTS answer_metadata;
 DROP TABLE IF EXISTS question_conditions;
