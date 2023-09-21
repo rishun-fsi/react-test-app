@@ -1,4 +1,4 @@
-import { db } from './db';
+import { connectDB } from './question/db';
 import { createGetResponseBody as createQuestionGetResponseBody} from './question/get';
 import { createPostResponseBody as  createQuestionPostResponseBody} from './question/post';
 import { createPutResponseBody as createQuestionPutResponseBody} from './question/put';
@@ -19,13 +19,23 @@ import { createGetOneResponseBody } from './questionnair/get-one';
 import * as express from "express";
 import { NextFunction, Request, Response } from "express"
 import * as cors from 'cors';
+
+import * as dotenv from 'dotenv'
+dotenv.config()
+
 const app = express();
 app.use(cors<Request>());
 app.use(express.json());
 
+const password = process.env['PASSWORD'];
+if (!password) {
+  throw new Error('password is not found.');
+}
+
+const db = connectDB(password);
+
 
 app.use("/question", async (req: Request, res: Response, next: NextFunction) => {
-
   if (
     (req.method === 'GET' && !req.query) ||
     ((req.method === 'POST' || req.method === 'PUT') && !req.body)
@@ -33,7 +43,6 @@ app.use("/question", async (req: Request, res: Response, next: NextFunction) => 
     //return createResponse(400, { message: 'データを指定してください。' });
     return res.status(400).json({ message: 'データを指定してください。' });
   }
-
   try {
     if (req.method === 'GET') {
       const getResponse = await createQuestionGetResponseBody(
@@ -150,7 +159,6 @@ app.use("/answer", answerHandle);
 app.post("/answer/chunk", answerHandle);
 
 const questionnairHandle = async (req: Request, res: Response, next: NextFunction) => {
-
   if (
     req.method === 'GET' &&
     !req.query &&
@@ -161,7 +169,6 @@ const questionnairHandle = async (req: Request, res: Response, next: NextFunctio
   }
 
   try {
-
     if (
       req.params !== null &&
       req.params.questionnairId !== undefined
