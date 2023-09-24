@@ -2,22 +2,29 @@ describe('編集画面への到達テスト', () => {
   beforeEach(() => {
     cy.visit('/form-answers-table');
     cy.origin(
-      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
+         Cypress.env('auth_url'),
       () => {
-        cy.get('input[type="button"]').eq(1).click();
+        //cy.get('input[type="button"]').eq(1).click();
+        cy.contains('Continue with Facebook').click({force: true});
       }
     );
-    cy.origin('https://login.microsoftonline.com', () => {
-      cy.get('input[placeholder="メール、電話、Skype"]').type(
-        'test@PJHealthcheckWebForm.onmicrosoft.com'
+    cy.origin(   Cypress.env('login_url'),() => {
+      // cy.get('input[placeholder="メール、電話、Skype"]').type(
+      //   Cypress.env('login_email')
+      // );
+      // cy.get('input[type = "submit"]').contains('次へ').click();
+      // cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
+      // cy.get('input[type = "submit"]').contains('サインイン').click();
+      // cy.get('input[type="button"]').click();
+
+      cy.get('input[placeholder="メールアドレスまたは電話番号"]').type(
+        Cypress.env('login_email')
       );
-      cy.get('input[type = "submit"]').contains('次へ').click();
-      cy.get('input[placeholder="パスワード"]').type('Healthcheck@123');
-      cy.get('input[type = "submit"]').contains('サインイン').click();
-      cy.get('input[type="button"]').click();
+      cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
+      cy.get('#loginbutton').click({force: true});
     });
     cy.origin(
-      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
+         Cypress.env('auth_url'),
       () => {}
     );
   });
@@ -25,7 +32,7 @@ describe('編集画面への到達テスト', () => {
   it('回答編集画面への遷移', () => {
     cy.get('button').eq(2).click();
     cy.get('input[aria-labelledby="enhanced-table-checkbox-1"]').check();
-    cy.get('#action-select').click();
+    cy.get('#action-select').click({force: true});
     cy.get('li[data-value="editAnswer"]').click();
 
     cy.url().should('eq', 'http://localhost:3000/form-answer-edit/1/1');
@@ -36,22 +43,29 @@ describe('回答の編集テスト', () => {
   beforeEach(() => {
     cy.visit('/form-answer-edit/1/1');
     cy.origin(
-      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
+         Cypress.env('auth_url'),
       () => {
-        cy.get('input[type="button"]').eq(1).click();
+        // cy.get('input[type="button"]').eq(1).click();
+        cy.contains('Continue with Facebook').click({force: true});
       }
     );
-    cy.origin('https://login.microsoftonline.com', () => {
-      cy.get('input[placeholder="メール、電話、Skype"]').type(
-        'test@PJHealthcheckWebForm.onmicrosoft.com'
+    cy.origin(   Cypress.env('login_url'),() => {
+      // cy.get('input[placeholder="メール、電話、Skype"]').type(
+      //   Cypress.env('login_email')
+      // );
+      // cy.get('input[type = "submit"]').contains('次へ').click();
+      // cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
+      // cy.get('input[type = "submit"]').contains('サインイン').click();
+      // cy.get('input[type="button"]').click();
+
+      cy.get('input[placeholder="メールアドレスまたは電話番号"]').type(
+        Cypress.env('login_email')
       );
-      cy.get('input[type = "submit"]').contains('次へ').click();
-      cy.get('input[placeholder="パスワード"]').type('Healthcheck@123');
-      cy.get('input[type = "submit"]').contains('サインイン').click();
-      cy.get('input[type="button"]').click();
+      cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
+      cy.get('#loginbutton').click({force: true});
     });
     cy.origin(
-      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
+         Cypress.env('auth_url'),
       () => {}
     );
     cy.get('[role="button"]').eq(0).as('systemSelect');
@@ -168,7 +182,7 @@ describe('回答の編集テスト', () => {
   after(() => {
     cy.visit('/form-answer-edit/1/1');
     cy.origin(
-      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
+         Cypress.env('auth_url'),
       () => {}
     );
 

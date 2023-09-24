@@ -2,7 +2,7 @@ describe('ログイン機能', () => {
   beforeEach(() => {
     cy.visit('/');
     cy.origin(
-      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
+         Cypress.env('auth_url'),
       () => {
         cy.get('input[type="button"]').eq(1).click();
       }
@@ -10,12 +10,12 @@ describe('ログイン機能', () => {
   });
 
   it('正しいIDとパスワードでログインができること', () => {
-    cy.origin('https://login.microsoftonline.com', () => {
+    cy.origin(   Cypress.env('login_url'),() => {
       cy.get('input[placeholder="メール、電話、Skype"]').type(
-        'test@PJHealthcheckWebForm.onmicrosoft.com'
+        Cypress.env('login_email')
       );
       cy.get('input[type = "submit"]').contains('次へ').click();
-      cy.get('input[placeholder="パスワード"]').type('Healthcheck@123');
+      cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
       cy.get('input[type = "submit"]').contains('サインイン').click();
       cy.get('input[type="button"]').click();
     });
@@ -25,7 +25,7 @@ describe('ログイン機能', () => {
   });
 
   it('存在しないIDではログインができないこと', () => {
-    cy.origin('https://login.microsoftonline.com', () => {
+    cy.origin(   Cypress.env('login_url'),() => {
       cy.get('input[placeholder="メール、電話、Skype"]').type(
         'false@PJHealthcheckWebForm.onmicrosoft.com'
       );
@@ -38,9 +38,9 @@ describe('ログイン機能', () => {
   });
 
   it('パスワードが正しくない場合はログインができないこと', () => {
-    cy.origin('https://login.microsoftonline.com', () => {
+    cy.origin(   Cypress.env('login_url'),() => {
       cy.get('input[placeholder="メール、電話、Skype"]').type(
-        'test@PJHealthcheckWebForm.onmicrosoft.com'
+        Cypress.env('login_email')
       );
       cy.get('input[type = "submit"]').contains('次へ').click();
       cy.get('input[placeholder="パスワード"]').type('Healthcheck');
@@ -57,24 +57,24 @@ describe('サインアウトのテスト', () => {
   it('サインアウト', () => {
     cy.visit('/');
     cy.origin(
-      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
+         Cypress.env('auth_url'),
       () => {
         cy.get('input[type="button"]').eq(1).click();
       }
     );
-    cy.origin('https://login.microsoftonline.com', () => {
+    cy.origin(   Cypress.env('login_url'),() => {
       cy.get('input[placeholder="メール、電話、Skype"]').type(
-        'test@PJHealthcheckWebForm.onmicrosoft.com'
+        Cypress.env('login_email')
       );
       cy.get('input[type = "submit"]').contains('次へ').click();
-      cy.get('input[placeholder="パスワード"]').type('Healthcheck@123');
+      cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
       cy.get('input[type = "submit"]').contains('サインイン').click();
       cy.get('input[type="button"]').click();
     });
     cy.get('.MuiAvatar-root').click();
     cy.contains('サインアウト').click();
     cy.origin(
-      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
+         Cypress.env('auth_url'),
       () => {
         cy.contains('Sign in with your corporate ID').should('exist');
       }

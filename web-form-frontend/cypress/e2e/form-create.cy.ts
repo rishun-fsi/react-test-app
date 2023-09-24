@@ -2,22 +2,22 @@ describe('アンケートフォームの新規作成機能', () => {
   beforeEach(() => {
     cy.visit('/form-management/new');
     cy.origin(
-      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
+         Cypress.env('auth_url'),
       () => {
         cy.get('input[type="button"]').eq(1).click();
       }
     );
-    cy.origin('https://login.microsoftonline.com', () => {
+    cy.origin(   Cypress.env('login_url'),() => {
       cy.get('input[placeholder="メール、電話、Skype"]').type(
-        'test@PJHealthcheckWebForm.onmicrosoft.com'
+        Cypress.env('login_email')
       );
       cy.get('input[type = "submit"]').contains('次へ').click();
-      cy.get('input[placeholder="パスワード"]').type('Healthcheck@123');
+      cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
       cy.get('input[type = "submit"]').contains('サインイン').click();
       cy.get('input[type="button"]').click();
     });
     cy.origin(
-      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
+         Cypress.env('auth_url'),
       () => {}
     );
   });
@@ -295,22 +295,22 @@ describe('新規作成機能 - 見た目のテスト', () => {
   beforeEach(() => {
     cy.visit('/form-management/new');
     cy.origin(
-      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
+         Cypress.env('auth_url'),
       () => {
         cy.get('input[type="button"]').eq(1).click();
       }
     );
-    cy.origin('https://login.microsoftonline.com', () => {
+    cy.origin(   Cypress.env('login_url'),() => {
       cy.get('input[placeholder="メール、電話、Skype"]').type(
-        'test@PJHealthcheckWebForm.onmicrosoft.com'
+        Cypress.env('login_email')
       );
       cy.get('input[type = "submit"]').contains('次へ').click();
-      cy.get('input[placeholder="パスワード"]').type('Healthcheck@123');
+      cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
       cy.get('input[type = "submit"]').contains('サインイン').click();
       cy.get('input[type="button"]').click();
     });
     cy.origin(
-      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
+         Cypress.env('auth_url'),
       () => {}
     );
     cy.get('button').contains('質問項目追加').click();
