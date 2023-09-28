@@ -7,11 +7,18 @@ import { APIGatewayProxyEventQueryStringParameters } from 'aws-lambda';
 import { createPostResponseBody } from './answer/post';
 import { createGetResponseBody } from './answer/get';
 import { createPutResponseBody } from './answer/put';
+import { createDeleteResponseBody } from './answer/delete';
 import { createChunkPostResponseBody } from './answer/chunk-post';
 import { createChunkPutResponseBody } from './answer/chunk-put';
 import { PostEventBody } from './answer/interface/EventBody';
 
+
+import { createPostResponseBody as createNotificationsPostResponseBody} from './notifications/post';
+
+import { createGetResponseBody as  createGetResponseBody4} from './notifications-type/get';
+
 import { createGetResponseBody as  createGetResponseBody2} from './answer-metadata/get';
+
 
 import { createGetResponseBody as  createGetResponseBody3} from './questionnair/get';
 import { createGetOneResponseBody } from './questionnair/get-one';
@@ -33,6 +40,10 @@ if (!password) {
 }
 
 const db = connectDB(password);
+
+
+const existPathParameter = (req: Request, key: string): boolean =>
+  Boolean(req.params && req.params[key]);
 
 
 app.use("/question", async (req: Request, res: Response, next: NextFunction) => {
@@ -76,11 +87,7 @@ app.use("/question", async (req: Request, res: Response, next: NextFunction) => 
 });
 
 app.get("/answer/:metadataId", async (req: Request, res: Response, next: NextFunction) => {
-  if (
-    req.method === 'GET' &&
-    (! req.params ||
-    ! req.params!.metadataId)
-  ) {
+  if (!existPathParameter(req, 'metadataId')){
     //return createResponse(400, { message: 'データを指定してください。' });
     return res.status(400).json({ message: 'データを指定してください。' });
   }
@@ -102,7 +109,7 @@ app.get("/answer/:metadataId", async (req: Request, res: Response, next: NextFun
 const answerHandle = async (req: Request, res: Response, next: NextFunction) => {
   if (
     (req.method === 'GET' && !req.query) ||
-    ((req.method === 'POST' || req.method === 'PUT') && !req.body)
+    ((req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') && !req.body)
   ) {
     //return createResponse(400, { message: 'データを指定してください。' });
     return res.status(400).json({ message: 'データを指定してください。' });
@@ -139,13 +146,20 @@ const answerHandle = async (req: Request, res: Response, next: NextFunction) => 
       );
       //return createResponse(chunkPutResponse.statusCode, chunkPutResponse.body);
       return res.status(chunkPutResponse.statusCode).json(chunkPutResponse.body);
-    } else {
+    } else if(req.method === 'PUT'){
       const putResponse = await createPutResponseBody(
         req.body!,
         db
       );
       //return createResponse(putResponse.statusCode, putResponse.body);
       return res.status(putResponse.statusCode).json(putResponse.body);
+    } else {
+      const deleteResponse = await createDeleteResponseBody(
+        req.body!,
+        db
+      );
+      //return createResponse(deleteResponse.statusCode, deleteResponse.body);
+      return res.status(deleteResponse.statusCode).json(deleteResponse.body);
     }
   } catch (error) {
     console.error(error);
@@ -199,6 +213,46 @@ const questionnairHandle = async (req: Request, res: Response, next: NextFunctio
 app.use("/questionnair/:questionnairId", questionnairHandle);
 
 app.use("/questionnair", questionnairHandle);
+
+
+
+app.post("/notifications", async (req: Request, res: Response, next: NextFunction) => {
+  if (req.method === 'POST' && !req.body) {
+    //return createResponse(400, { message: 'データを指定してください。' });
+    return res.status(400).json({ message: 'データを指定してください。' });
+  }
+
+  try {
+    const db = connectDB(password);
+
+    const postResponse = await createNotificationsPostResponseBody(req.body!, db);
+    //return createResponse(postResponse.statusCode, postResponse.body);
+    return res.status(postResponse.statusCode).json(postResponse.body);
+  } catch (error) {
+    console.error(error);
+    const body = { message: 'error' };
+    //return createResponse(500, body);
+    return res.status(500).json(body);
+  }
+
+});
+
+app.get("/notifications/type", async (req: Request, res: Response, next: NextFunction) => {
+
+  try {
+    const db = connectDB(password);
+
+    const getResponse = await createGetResponseBody4(db);
+    //return createResponse(getResponse.statusCode, getResponse.body);
+    return res.status(getResponse.statusCode).json(getResponse.body);
+  } catch (error) {
+    console.error(error);
+    const body = { message: 'error' };
+    //return createResponse(500, body);
+    return res.status(500).json(body);
+  }
+
+});
 
 
 const PORT = 5000

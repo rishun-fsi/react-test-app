@@ -26,7 +26,7 @@ export class ApiGatewayResource extends Stack {
         restApiName: `${id}-rest-api-${stage}`,
         defaultCorsPreflightOptions: {
           allowOrigins: apigateway.Cors.ALL_ORIGINS,
-          allowMethods: ['GET', 'POST', 'PUT', 'OPTIONS'],
+          allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
           allowHeaders: ['Content-Type', 'Authorization']
         },
         defaultMethodOptions: {

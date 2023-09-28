@@ -12,7 +12,8 @@ import {
   deleteNewQuestion,
   deleteNewQuestionItem
 } from '../../common/manageQuestion';
-import { Questionnair, Inheritance } from '../../interface/Questionnair';
+import { Questionnair } from '../../interface/Questionnair';
+import { Inheritance } from '../../interface/Inheritance';
 import { postQuestionnair } from '../../api';
 
 const createQuestionnair = async (
@@ -59,6 +60,10 @@ const save =
 const FormCreatePage: React.FC = () => {
   const [questionnairName, setQuestionnairName] = useState<string>('');
   const [questions, setQuestions] = useState<NewQuestion[]>([]);
+  const [inheritance, setInheritance] = useState<Inheritance>({
+    isSameUser: true,
+    questionId: 0
+  });
 
   return (
     <EditableQuestionnair
@@ -76,6 +81,8 @@ const FormCreatePage: React.FC = () => {
       updateQuestionItem={updateQuestionItem(questions, setQuestions)}
       switchOrder={switchOrder(questions, setQuestions)}
       save={save}
+      inheritance={inheritance}
+      setInheritance={setInheritance}
     />
   );
 };

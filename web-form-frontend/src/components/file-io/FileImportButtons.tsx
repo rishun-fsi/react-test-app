@@ -325,7 +325,7 @@ const FileImportButtons: React.FC<FileImportButtonsProps> = (props) => {
         props.questionnairId,
         false
       );
-      setQuestions(completelyExpandQuestionResponse(response));
+      setQuestions(completelyExpandQuestionResponse(response.questions));
     })();
   }, [props.questionnairId]);
 

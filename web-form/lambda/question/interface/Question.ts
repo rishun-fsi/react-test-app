@@ -96,6 +96,7 @@ export interface QuestionGroupByItem {
   items?: QuestionItem[];
   group?: string;
   groupId?: number;
+  canInherit: boolean;
   isDeleted: boolean;
   priority: number;
 }
@@ -107,6 +108,7 @@ export interface Question {
   required: boolean;
   headline: string;
   items?: QuestionItem[];
+  canInherit: boolean;
   isDeleted: boolean;
   priority: number;
 }
@@ -128,6 +130,7 @@ export interface FetchedQuestion {
   is_description?: boolean;
   group?: string;
   group_id?: number;
+  can_inherit: boolean;
   is_question_deleted: boolean;
   is_item_deleted?: boolean;
   priority: number;

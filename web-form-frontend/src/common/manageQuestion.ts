@@ -8,11 +8,10 @@ import {
   EditingQuestionItem,
   ExistingQuestion,
   Question,
-  GroupedQuestion,
   QuestionItem,
-  ExistingQuestionItem
+  ExistingQuestionItem,
+  FetchedQuestion
 } from '../interface/Question';
-import { QuestionResponse } from '../interface/Question';
 
 type UpdateType = 'string' | 'boolean';
 
@@ -223,10 +222,10 @@ export const deleteNewQuestionItem =
   };
 
 export const completelyExpandQuestionResponse = (
-  questionResponse: QuestionResponse
+  questionResponse: FetchedQuestion[]
 ): ExistingQuestion[] => {
   const flattened: Question[] = questionResponse
-    .map((question: Question | GroupedQuestion): Question | Question[] => {
+    .map((question: FetchedQuestion): Question | Question[] => {
       if ('group' in question) {
         return question.questions;
       }
@@ -245,8 +244,7 @@ export const completelyExpandQuestionResponse = (
                 ...item
               })
             )
-          : undefined,
-      canInherit: false
+          : undefined
     })
   );
 };

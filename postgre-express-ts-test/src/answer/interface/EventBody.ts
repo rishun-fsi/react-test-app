@@ -19,6 +19,12 @@ export interface PutEventBody {
   metadataId: number;
 }
 
+export interface DeleteEventBody {
+  metadataIds: number[];
+  userId: string;
+  questionnairId: number;
+}
+
 export interface ChunkPutAnswer {
   metadataId?: number;
   existing?: ExistingAnswer[];

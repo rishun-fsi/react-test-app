@@ -46,6 +46,10 @@ export interface PutResponse {
   deleteIds: number[];
 }
 
+export interface DeleteResponse {
+  deleted: number[];
+}
+
 export interface ChunkPutResponse {
   message: string;
   edited?: number[];

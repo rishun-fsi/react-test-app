@@ -2,6 +2,9 @@ import { Context, APIGatewayProxyResult, APIGatewayEvent } from 'aws-lambda';
 import { connectDB } from './db';
 import { createGetResponseBody } from './get';
 
+const existPathParameter = (event: APIGatewayEvent, key: string): boolean =>
+  Boolean(event.pathParameters && event.pathParameters[key]);
+
 export const lambdaHandler = async (
   event: APIGatewayEvent,
   context: Context
@@ -16,16 +19,12 @@ export const lambdaHandler = async (
     throw new Error('password is not found.');
   }
 
-  if (
-    event.httpMethod === 'GET' &&
-    !event.pathParameters &&
-    !event.pathParameters!.metadataId
-  ) {
+  if (!existPathParameter(event, 'metadataId'))
     return createResponse(400, { message: 'データを指定してください。' });
-  }
 
   try {
     const db = connectDB(password);
+
     const metadataId = Number(event.pathParameters!.metadataId);
     const getResponse = await createGetResponseBody(metadataId, db);
     return createResponse(getResponse.statusCode, getResponse.body);

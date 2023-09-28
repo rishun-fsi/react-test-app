@@ -1,3 +1,5 @@
+import { Inheritance } from './Inheritance';
+
 export type QuestionType = 'select' | 'radio' | 'check' | 'text' | 'number';
 
 export type QuestionTypeObject = { type: QuestionType; name: string };
@@ -17,6 +19,7 @@ export interface Question {
   headline: string;
   items?: QuestionItem[];
   isDeleted: boolean;
+  canInherit: boolean;
   priority: number;
 }
 
@@ -27,7 +30,12 @@ export interface GroupedQuestion {
   questions: Question[];
 }
 
-export type QuestionResponse = (Question | GroupedQuestion)[];
+export type FetchedQuestion = Question | GroupedQuestion;
+
+export interface QuestionResponse {
+  questions: FetchedQuestion[];
+  inheritance?: Inheritance;
+}
 
 export interface NewQuestionItem {
   name: string;

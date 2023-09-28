@@ -55,6 +55,8 @@ export class DcmDxPjHealthcheckWebFormStack extends cdk.Stack {
     );
     const answerMetadataLambda: lambda.Function =
       lambdaResource.createResources(this, 'answer-metadata');
+    const answerInheritanceLambda: lambda.Function =
+      lambdaResource.createResources(this, 'answer-inheritance');
     const questionLambda: lambda.Function = lambdaResource.createResources(
       this,
       'question'
@@ -63,6 +65,12 @@ export class DcmDxPjHealthcheckWebFormStack extends cdk.Stack {
       this,
       'questionnair'
     );
+    const notificationsLambda: lambda.Function = lambdaResource.createResources(
+      this,
+      'notifications'
+    );
+    const notificationsTypeLambda: lambda.Function =
+      lambdaResource.createResources(this, 'notifications-type');
 
     const cognitoResource = new CognitoResource();
     const userPool: cognito.UserPool = cognitoResource.createResource(this);
@@ -84,6 +92,9 @@ export class DcmDxPjHealthcheckWebFormStack extends cdk.Stack {
       .addMethod('PUT', new apigateway.LambdaIntegration(answerLambda));
     apiGateway.root
       .resourceForPath('answer')
+      .addMethod('DELETE', new apigateway.LambdaIntegration(answerLambda));
+    apiGateway.root
+      .resourceForPath('answer')
       .addResource('{metadataId}')
       .addMethod('GET', new apigateway.LambdaIntegration(answerMetadataLambda));
     apiGateway.root
@@ -94,6 +105,22 @@ export class DcmDxPjHealthcheckWebFormStack extends cdk.Stack {
       .resourceForPath('answer')
       .resourceForPath('chunk')
       .addMethod('POST', new apigateway.LambdaIntegration(answerLambda));
+    apiGateway.root
+      .resourceForPath('answer')
+      .addResource('inheritance')
+      .addMethod(
+        'GET',
+        new apigateway.LambdaIntegration(answerInheritanceLambda)
+      );
+    apiGateway.root
+      .resourceForPath('answer')
+      .resourceForPath('inheritance')
+      .addResource('{userId}')
+      .addMethod(
+        'GET',
+        new apigateway.LambdaIntegration(answerInheritanceLambda)
+      );
+
     apiGateway.root
       .addResource('question')
       .addMethod('GET', new apigateway.LambdaIntegration(questionLambda));
@@ -111,6 +138,17 @@ export class DcmDxPjHealthcheckWebFormStack extends cdk.Stack {
       .resourceForPath('questionnair')
       .addResource('{questionnairId}')
       .addMethod('GET', new apigateway.LambdaIntegration(questionnairLambda));
+
+    apiGateway.root
+      .addResource('notifications')
+      .addMethod('POST', new apigateway.LambdaIntegration(notificationsLambda));
+    apiGateway.root
+      .resourceForPath('notifications')
+      .addResource('type')
+      .addMethod(
+        'GET',
+        new apigateway.LambdaIntegration(notificationsTypeLambda)
+      );
   }
 }
 

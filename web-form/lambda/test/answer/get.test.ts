@@ -77,10 +77,10 @@ describe('正常系', () => {
         }
       ],
       metadataId: 1,
-      answeredDate: '2023-07-10',
+      answeredDate: '2023-10-01',
       userId: 'userZ',
       updateUser: 'userY',
-      updatedDate: '2023-08-10'
+      updatedDate: '2023-10-10'
     });
     expect(response.answers[1]).toEqual({
       answer: [
@@ -103,18 +103,6 @@ describe('正常系', () => {
           itemName: 'Azure'
         },
         {
-          id: 3,
-          itemId: 6,
-          itemName: 'AWS',
-          textAnswer: undefined
-        },
-        {
-          id: 3,
-          itemId: 8,
-          itemName: 'Azure',
-          textAnswer: undefined
-        },
-        {
           id: 4,
           itemName: '1日以内'
         },
@@ -124,10 +112,10 @@ describe('正常系', () => {
         }
       ],
       metadataId: 2,
-      answeredDate: '2023-07-11',
+      answeredDate: '2023-10-02',
       userId: 'userY',
       updateUser: 'userX',
-      updatedDate: '2023-08-11'
+      updatedDate: '2023-10-11'
     });
     expect(typeof response.totalCount).toBe('number');
   });

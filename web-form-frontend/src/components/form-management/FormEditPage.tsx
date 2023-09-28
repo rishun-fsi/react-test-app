@@ -33,7 +33,8 @@ import {
   updateQuestion,
   completelyExpandQuestionResponse
 } from '../../common/manageQuestion';
-import { EditedQuestionnair, Inheritance } from '../../interface/Questionnair';
+import { EditedQuestionnair } from '../../interface/Questionnair';
+import { Inheritance } from '../../interface/Inheritance';
 
 const deleteQuestion =
   (
@@ -365,6 +366,9 @@ const FormEditPage: React.FC = () => {
     []
   );
   const [questions, setQuestions] = useState<EditingQuestion[]>([]);
+  const [inheritance, setInheritance] = useState<Inheritance>({
+    isSameUser: true
+  });
 
   useEffect(() => {
     if (!initialQuestionnairName) {
@@ -378,8 +382,10 @@ const FormEditPage: React.FC = () => {
         questionnairId,
         true
       );
-      setInitialQuestions(completelyExpandQuestionResponse(response));
-      setQuestions(completelyExpandQuestionResponse(response));
+      setInitialQuestions(completelyExpandQuestionResponse(response.questions));
+      setQuestions(completelyExpandQuestionResponse(response.questions));
+      if (response.inheritance)
+        setInheritance({ questionId: 0, ...response.inheritance });
     })();
   }, [questionnairId, navigate, initialQuestionnairName]);
 
@@ -402,6 +408,8 @@ const FormEditPage: React.FC = () => {
       restoreQuestionItem={restoreQuestionItem(questions, setQuestions)}
       save={save(initialQuestions, questionnairId)}
       canSave={!_.isEqual(questions, initialQuestions)}
+      inheritance={inheritance}
+      setInheritance={setInheritance}
     />
   );
 };

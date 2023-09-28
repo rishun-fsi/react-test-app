@@ -36,72 +36,70 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                items:
-                  $ref: '#/components/schemas/Answer'
-                example:
-                  message: success
+                $ref: '#/components/schemas/Answer'
+              example:
+                message: success
+                answers:
+                  headers:
+                    - id: 1
+                      name: システム名
+                    - id: 2
+                      name: 開発手法
+                    - id: 3
+                      name: サーバーの土台
+                      items:
+                        - id: 6
+                          name: AWS
+                        - id: 7
+                          name: GCP
+                        - id: 8
+                          name: Azure
+                        - id: 9
+                          name: ドコモ内オンプレ
+                        - id: 10
+                          name: その他
+                    - id: 4
+                      name: 変更のリードタイム
+                    - id: 5
+                      name: 削除済み質問
                   answers:
-                    headers:
-                      - id: 1
-                        name: システム名
-                      - id: 2
-                        name: 開発手法
-                      - id: 3
-                        name: サーバーの土台
-                        items:
-                          - id: 6
-                            name: AWS
-                          - id: 7
-                            name: GCP
-                          - id: 8
-                            name: Azure
-                          - id: 9
-                            name: ドコモ内オンプレ
-                          - id: 10
-                            name: その他
-                      - id: 4
-                        name: 変更のリードタイム
-                      - id: 5
-                        name: 削除済み質問
-                    answers:
-                      - answer:
-                          - id: 1
-                            itemId: 1
-                            itemName: システムA
-                          - id: 2
-                            itemId: 4
-                            itemName: アジャイル
-                          - id: 3
-                            itemId: 8
-                            itemName: Azure
-                          - id: 4
-                            itemId: 12
-                            itemName: 1日以内
-                          - id: 5
-                            textAnswer: はい
-                        metadataId: 3
-                        answeredDate: '2023-07-21'
-                        userId: userA
-                        updateUser: userB
-                        updatedDate: '2023-08-01'
-                      - answer:
-                          - id: 1
-                            itemId: 2
-                            itemName: システムB
-                          - id: 2
-                            itemId: 5
-                            itemName: ウォーターフォール
-                          - id: 4
-                            itemId: 14
-                            itemName: それ以上
-                          - id: 5
-                            textAnswer: いいえ
-                        metadataId: 4
-                        answeredDate: '2023-07-30'
-                        userId: userC
-                        updateUser: userD
-                        updatedDate: '2023-08-30'
+                    - answer:
+                        - id: 1
+                          itemId: 1
+                          itemName: システムA
+                        - id: 2
+                          itemId: 4
+                          itemName: アジャイル
+                        - id: 3
+                          itemId: 8
+                          itemName: Azure
+                        - id: 4
+                          itemId: 12
+                          itemName: 1日以内
+                        - id: 5
+                          textAnswer: はい
+                      metadataId: 3
+                      answeredDate: '2023-07-21'
+                      userId: userA
+                      updateUser: userB
+                      updatedDate: '2023-08-01'
+                    - answer:
+                        - id: 1
+                          itemId: 2
+                          itemName: システムB
+                        - id: 2
+                          itemId: 5
+                          itemName: ウォーターフォール
+                        - id: 4
+                          itemId: 14
+                          itemName: それ以上
+                        - id: 5
+                          textAnswer: いいえ
+                      metadataId: 4
+                      answeredDate: '2023-07-30'
+                      userId: userC
+                      updateUser: userD
+                      updatedDate: '2023-08-30'
         '400':
           description: 不正なパラメータによるエラーの発生
         '500':
@@ -158,6 +156,26 @@ paths:
           description: 入力起因のエラーが発生した
         '500':
           description: 予期せぬエラーが発生した
+    delete:
+      summary: 回答を削除する
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerDeleteRequest'
+            example:
+              metadataIds:
+                - 1
+                - 2
+              userId: hideaki.azuma.ra@nttcom.co.jp
+              questionnairId: 1
+      responses:
+        '200':
+          description: 正常に回答を削除できた
+        '400':
+          description: 入力起因のエラーが発生した
+        '500':
+          description: 予期せぬエラーが発生した
   /answer/{metadataId}:
     get:
       summary: 特定の回答メタデータIDから回答データを取得
@@ -174,19 +192,17 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                items:
-                  $ref: '#/components/schemas/AnswerMetadata'
-                example:
-                  message: success
-                  answers:
-                    - answerId: 1
-                      questionId: 1
-                      itemId: 1
-                      textAnswer: はい
-                    - answerId: 2
-                      questionId: 2
-                      itemId: 4
+                $ref: '#/components/schemas/AnswerMetadata'
+              example:
+                message: success
+                answers:
+                  - answerId: 1
+                    questionId: 1
+                    itemId: 1
+                    textAnswer: はい
+                  - answerId: 2
+                    questionId: 2
+                    itemId: 4
         '400':
           description: 不正なパラメータによるエラーの発生
         '500':
@@ -211,24 +227,22 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                items:
-                  $ref: '#/components/schemas/AnswerChunkPostResponse'
-                example:
-                  message: success
-                  answers:
-                    - metadataId: 1
-                      questionnairId: 1
-                      userId: hideaki.azuma.ra@nttcom.co.jp
-                      createdDate: '2023-09-12'
-                      updatedDate: '2023-09-12'
-                      answers:
-                        - answerId: 1
-                          questionId: 1
-                          itemId: 1
-                        - answerId: 2
-                          questionId: 2
-                          textAnswer: sample
+                $ref: '#/components/schemas/AnswerChunkPostResponse'
+              example:
+                message: success
+                answers:
+                  - metadataId: 1
+                    questionnairId: 1
+                    userId: hideaki.azuma.ra@nttcom.co.jp
+                    createdDate: '2023-09-12'
+                    updatedDate: '2023-09-12'
+                    answers:
+                      - answerId: 1
+                        questionId: 1
+                        itemId: 1
+                      - answerId: 2
+                        questionId: 2
+                        textAnswer: sample
         '400':
           description: 不正なパラメータによるエラーの発生
         '500':
@@ -253,16 +267,16 @@ paths:
                       textAnswer: sample
                   metadataId: 1
                 - existing:
-                  - answerId: 5
-                    itemId: 2
+                    - answerId: 5
+                      itemId: 2
                   metadataId: 2
                   delete:
                     - 10
                 - new:
-                  - questionId: 3
-                    itemId: 4
-                  - questionId: 5
-                    textAnswer: sample
+                    - questionId: 3
+                      itemId: 4
+                    - questionId: 5
+                      textAnswer: sample
               userId: hideaki.azuma.ra@nttcom.co.jp
               questionnairId: 1
       responses:
@@ -271,27 +285,133 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                items:
-                  $ref: '#/components/schemas/AnswerChunkPutResponse'
-                example:
-                  message: success
-                  edited:
-                    - 1
-                    - 3
-                  inserted:
-                    - 10
-                    - 11
+                $ref: '#/components/schemas/AnswerChunkPutResponse'
+              example:
+                message: success
+                edited:
+                  - 1
+                  - 3
+                inserted:
+                  - 10
+                  - 11
         '400':
           description: エラー発生
           content:
             application/json:
               schema:
-                type: object
-                items:
-                  $ref: '#/components/schemas/AnswerChunkPutResponse'
-                example:
-                  message: ID1のデータ編集に失敗しました。
+                $ref: '#/components/schemas/AnswerChunkPutResponse'
+              example:
+                message: ID1のデータ編集に失敗しました。
+        '500':
+          description: サーバー側の予期せぬエラーの発生
+  /answer/inheritance:
+    get:
+      summary: 質問IDが一致する最新の回答内容を取得する
+      parameters:
+        - name: questionnairId
+          description: アンケートのID
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: questionId
+          description: 質問のID
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          description: 選択肢のID
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: textAnswer
+          description: 記述式の回答
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 正常に処理を完遂
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerInheritance'
+              example:
+                message: 'success'
+                answers:
+                  - questionId: 1
+                    itemId: 1
+                  - questionId: 2
+                    textAnswer: 'test'
+        '400':
+          description: エラー発生
+        '404':
+          description: 回答が存在しない場合
+          content:
+            application/json:
+              example:
+                  message: '過去の回答が存在しませんでした。'
+        '500':
+          description: サーバー側の予期せぬエラーの発生
+  /answer/inheritance/{userId}:
+    get:
+      summary: 質問IDが一致する当該ユーザの最新の回答内容を取得する
+      parameters:
+        - name: userId
+          description: 回答者のユーザID
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: questionnairId
+          description: アンケートのID
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: questionId
+          description: 質問のID
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: itemId
+          description: 選択肢のID
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: textAnswer
+          description: 記述式の回答
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 正常に処理を完遂
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerInheritance'
+              example:
+                message: 'success'
+                answers:
+                  - questionId: 1
+                    itemId: 1
+                  - questionId: 2
+                    textAnswer: 'test'
+        '400':
+          description: エラー発生
+        '404':
+          description: 回答が存在しない場合
+          content:
+            application/json:
+              example:
+                  message: '過去の回答が存在しませんでした。'
         '500':
           description: サーバー側の予期せぬエラーの発生
   /question:
@@ -316,62 +436,66 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                items:
-                  $ref: '#/components/schemas/Question'
-                example:
-                  message: success
-                  questions:
-                    - id: 1
-                      question: システム名を選択してください。
-                      type: select
-                      required: true
-                      headline: システム名
-                      items:
-                        - id: 1
-                          name: システムA
-                          isDescription: true
-                          isDeleted: false
-                        - id: 2
-                          name: システムB
-                          isDescription: false
-                      isDeleted: false
-                      priority: 1
-                    - groupId: 1
-                      group: 開発環境
-                      questions:
-                        - id: 2
-                          question: 開発手法を選択してください。
-                          type: radio
-                          required: true
-                          headline: 開発手法
-                          items:
-                            - id: 3
-                              name: アジャイル
-                              isDescription: false
-                              isDeleted: false
-                            - id: 4
-                              name: ウォーターフォール
-                              isDescription: false
-                              isDeleted: false
-                          isDeleted: false
-                          priority: 2
-                        - id: 3
-                          question: サーバーの土台を選択してください。
-                          type: check
-                          required: false
-                          headline: サーバーの土台
-                          items:
-                            - id: 5
-                              name: AWS
-                              isDescription: false
-                              isDeleted: false
-                            - id: 6
-                              name: その他
-                              isDescription: true
-                              isDeleted: false
-                          isDeleted: false
-                          priority: 3
+                $ref: '#/components/schemas/Question'
+              example:
+                message: success
+                questions:
+                  - id: 1
+                    question: システム名を選択してください。
+                    type: select
+                    required: true
+                    headline: システム名
+                    items:
+                      - id: 1
+                        name: システムA
+                        isDescription: true
+                        isDeleted: false
+                      - id: 2
+                        name: システムB
+                        isDescription: false
+                    canInherit: false
+                    isDeleted: false
+                    priority: 1
+                  - groupId: 1
+                    group: 開発環境
+                    questions:
+                      - id: 2
+                        question: 開発手法を選択してください。
+                        type: radio
+                        required: true
+                        headline: 開発手法
+                        items:
+                          - id: 3
+                            name: アジャイル
+                            isDescription: false
+                            isDeleted: false
+                          - id: 4
+                            name: ウォーターフォール
+                            isDescription: false
+                            isDeleted: false
+                        canInherit: true
+                        isDeleted: false
+                        priority: 2
+                      - id: 3
+                        question: サーバーの土台を選択してください。
+                        type: check
+                        required: false
+                        headline: サーバーの土台
+                        items:
+                          - id: 5
+                            name: AWS
+                            isDescription: false
+                            isDeleted: false
+                          - id: 6
+                            name: その他
+                            isDescription: true
+                            isDeleted: false
+                        canInherit: true
+                        isDeleted: false
+                        priority: 3
+                inheritance:
+                  isSameUser: false
+                  questionId: 1
         '400':
           description: 不正なパラメータによるエラーの発生
         '500':
@@ -486,26 +610,24 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                items:
-                  $ref: '#/components/schemas/Questionnair'
-                example:
-                  message: success
-                  totalCount: 2
-                  questionnairs:
-                    items:
-                      - id: 1
-                        name: プロダクト健康診断
-                        userId: hideaki.azuma.ra@nttcom.co.jp
-                        createdDate: '2023-08-15'
-                        updatedDate: '2023-08-15'
-                        isDeleted: false
-                      - id: 2
-                        name: アンケート2
-                        userId: hideaki.azuma.ra@nttcom.co.jp
-                        createdDate: '2023-08-15'
-                        updatedDate: '2023-08-15'
-                        isDeleted: false
+                $ref: '#/components/schemas/Questionnair'
+              example:
+                message: success
+                totalCount: 2
+                questionnairs:
+                  items:
+                    - id: 1
+                      name: プロダクト健康診断
+                      userId: hideaki.azuma.ra@nttcom.co.jp
+                      createdDate: '2023-08-15'
+                      updatedDate: '2023-08-15'
+                      isDeleted: false
+                    - id: 2
+                      name: アンケート2
+                      userId: hideaki.azuma.ra@nttcom.co.jp
+                      createdDate: '2023-08-15'
+                      updatedDate: '2023-08-15'
+                      isDeleted: false
         '400':
           description: 不正なパラメータによるエラーの発生
         '500':
@@ -526,18 +648,61 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                items:
-                  $ref: '#/components/schemas/OneQuestionnair'
-                example:
-                  message: success
-                  questionnair:
-                    id: 1
-                    name: プロダクト健康診断
-                    userId: hideaki.azuma.ra@nttcom.co.jp
-                    createdDate: '2023-08-15'
-                    updatedDate: '2023-08-15'
-                    isDeleted: false
+                $ref: '#/components/schemas/OneQuestionnair'
+              example:
+                message: success
+                questionnair:
+                  id: 1
+                  name: プロダクト健康診断
+                  userId: hideaki.azuma.ra@nttcom.co.jp
+                  createdDate: '2023-08-15'
+                  updatedDate: '2023-08-15'
+                  isDeleted: false
+        '400':
+          description: 不正なパラメータによるエラーの発生
+        '500':
+          description: サーバー側の予期せぬエラーの発生
+  /notifications:
+    post:
+      summary: お知らせを新規に登録する
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationsPostRequest'
+            example:
+              title: お知らせのタイトル
+              content: お知らせの内容
+              typeId: 1
+              publishTimestamp: 2023/09/27 10:00:00
+              expireTimestamp: 2023/10/27 10:00:00
+              userId: hideaki.azuma.ra@nttcom.co.jp
+      responses:
+        '200':
+          description: 正常に新規お知らせを保存できた
+        '400':
+          description: 不正なパラメータなど、呼び出しが不正な場合
+        '500':
+          description: サーバー側でエラーが発生した
+  /notifications/types:
+    get:
+      summary: お知らせ種別を取得する
+      responses:
+        '200':
+          description: お知らせ種別の一覧
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationTypes'
+              example:
+                message: success
+                types:
+                  - id: 1
+                    name: 重要
+                  - id: 2
+                    name: 周知
+                  - id: 3
+                    name: その他
         '400':
           description: 不正なパラメータによるエラーの発生
         '500':
@@ -652,6 +817,24 @@ components:
         metadataId:
           type: integer
           description: 回答のメタデータのID
+    AnswerDeleteRequest:
+      type: object
+      required:
+        - metadataIds
+        - userId
+        - questionnairId
+      properties:
+        metadataIds:
+          type: array
+          items:
+            type: integer
+            description: 回答を取得するメタデータID
+        userId:
+          type: string
+          description: ユーザーID
+        questionnairId:
+          type: integer
+          description: アンケートのID
     AnswerChunkPostRequest:
       type: object
       required:
@@ -782,6 +965,28 @@ components:
           items:
             type: integer
             description: 追加した質問のID
+    AnswerInheritance:
+      type: object
+      properties:
+        message:
+          type: string
+          description: システムメッセージ(エラーの場合はエラーメッセージ)
+        answers:
+          type: array
+          items:
+            type: object
+            required:
+              - questionId
+            properties:
+              questionId:
+                type: integer
+                description: 質問のID
+              itemId:
+                type: integer
+                description: 選択肢のID
+              textAnswer:
+                type: string
+                description: 記述式の回答
     Question:
       type: object
       properties:
@@ -793,6 +998,18 @@ components:
           items:
             type: object
             description: 単体の質問、またはグルーピングされた質問
+        inheritance:
+          type: object
+          required:
+            - isSameUser
+          properties:
+            isSameUser:
+              type: boolean
+              description: 同一ユーザーの前回回答のみを参照するかのフラグ
+            questionId:
+              type: integer
+              description: どの質問を元に前回回答を反映させるかを決定するための質問の添え字
+
     QuestionPostRequest:
       type: object
       required:
@@ -1075,3 +1292,45 @@ components:
             isDeleted:
               type: boolean
               description: 論理削除のフラグ
+
+    NotificationsPostRequest:
+      type: object
+      required:
+        - title
+        - content
+        - typeId
+        - userId
+      properties:
+        title:
+          type: string
+          description: お知らせタイトル(200文字まで)
+        content:
+          type: string
+          description: お知らせの中身(1000文字まで)
+        typeId:
+          type: integer
+          description: お知らせの種別のID
+        publishTimestamp:
+          type: string
+          description: お知らせを掲載開始する日時(形式は YYYY/MM/DD HH:mm:SS)
+        expireTimestamp:
+          type: string
+          description: お知らせを掲載終了する日時(形式は YYYY/MM/DD HH:mm:SS)
+        userId:
+          type: string
+          description: ユーザーID
+    NotificationTypes:
+      type: object
+      properties:
+        message:
+          type: string
+          description: システムメッセージ
+        types:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: お知らせ種別のID
+            name:
+              type: string
+              description: お知らせ種別の名前

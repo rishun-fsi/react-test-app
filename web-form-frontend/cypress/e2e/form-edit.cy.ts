@@ -2,22 +2,22 @@ describe('アンケート編集機能', () => {
   beforeEach(() => {
     cy.visit('/form-management');
     cy.origin(
-         Cypress.env('auth_url'),
+      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
       () => {
         cy.get('input[type="button"]').eq(1).click();
       }
     );
-    cy.origin(   Cypress.env('login_url'),() => {
+    cy.origin('https://login.microsoftonline.com', () => {
       cy.get('input[placeholder="メール、電話、Skype"]').type(
-        Cypress.env('login_email')
+        'test@PJHealthcheckWebForm.onmicrosoft.com'
       );
       cy.get('input[type = "submit"]').contains('次へ').click();
-      cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
+      cy.get('input[placeholder="パスワード"]').type('Healthcheck@123');
       cy.get('input[type = "submit"]').contains('サインイン').click();
       cy.get('input[type="button"]').click();
     });
     cy.origin(
-         Cypress.env('auth_url'),
+      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
       () => {}
     );
     cy.get('button').contains('編集').click();
@@ -77,41 +77,44 @@ describe('アンケート編集機能', () => {
   });
 
   it('必須のON/OFFを切り替えられること', () => {
-    cy.get('input[type="checkbox"]').eq(3).check();
-    cy.get('input[type="checkbox"]').eq(3).should('be.checked');
-    cy.get('input[type="checkbox"]').eq(3).uncheck();
-    cy.get('input[type="checkbox"]').eq(3).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(4).uncheck();
+    cy.get('input[type="checkbox"]').eq(4).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(4).check();
+    cy.get('input[type="checkbox"]').eq(4).should('be.checked');
   });
 
   it('前回回答の反映のON/OFFを切り替えられること', () => {
-    cy.get('input[type="checkbox"]').eq(4).check();
+    cy.get('input[type="checkbox"]').eq(5).check();
     cy.get('input[type="checkbox"]').eq(5).should('be.checked');
     cy.get('input[type="checkbox"]').eq(5).uncheck();
-    cy.get('input[type="checkbox"]').eq(4).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(5).should('not.be.checked');
   });
 
-  it('前回回答の反映にチェックが入っていると、継承用のフォームが出現すること', () => {
-    cy.contains('前回回答を反映する際のキーとする質問').should('not.exist');
+  it('前回回答の反映のチェックがすべて消えると継承用のフォームが消え、一つでもチェックを入れるとフォームが出現すること', () => {
+    cy.contains('前回回答を反映する際のキーとする質問').should('exist');
+    cy.get('input[type="checkbox"]').eq(9).uncheck();
+    cy.get('input[type="checkbox"]').eq(16).uncheck();
 
-    cy.get('input[type="checkbox"]').eq(4).check();
+    cy.contains('前回回答を反映する際のキーとする質問').should('not.exist');
+    cy.get('input[type="checkbox"]').eq(8).check();
     cy.contains('前回回答を反映する際のキーとする質問').should('exist');
   });
 
   it('同一ユーザーの前回回答を参照するのON/OFFが切り替えられること', () => {
-    cy.get('input[type="checkbox"]').eq(4).check();
-    cy.get('input[type="checkbox"]').eq(0).uncheck();
-    cy.get('input[type="checkbox"]').eq(0).should('not.be.checked');
     cy.get('input[type="checkbox"]').eq(0).check();
     cy.get('input[type="checkbox"]').eq(0).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(0).uncheck();
+    cy.get('input[type="checkbox"]').eq(0).should('not.be.checked');
   });
 
   it('同一ユーザーの前回回答を反映しない場合はキーとする質問を指定しないことを許容しないこと', () => {
-    cy.get('input[type="checkbox"]').eq(4).check();
-    cy.get('input[type="checkbox"]').eq(0).uncheck();
+    cy.get('[role="button"]').eq(0).click();
+    cy.get('li').contains('指定しない').click();
     cy.contains(
       '同一ユーザーの前回回答を参照しない場合はキーとする質問を指定してください。'
     ).should('exist');
-    cy.contains('指定しない').click();
+
+    cy.get('[role="button"]').eq(0).click();
     cy.get('li[data-value="1"]').click();
     cy.contains(
       '同一ユーザーの前回回答を参照しない場合はキーとする質問を指定してください。'
@@ -119,10 +122,7 @@ describe('アンケート編集機能', () => {
   });
 
   it('継承のキーとして指定されている質問は削除ができないこと', () => {
-    cy.get('input[type="checkbox"]').eq(4).check();
-    cy.get('input[type="checkbox"]').eq(0).uncheck();
-
-    cy.contains('指定しない').click();
+    cy.get('[role="button"]').eq(0).click();
     cy.get('li[data-value="1"]').click();
     cy.contains('質問1: システム名')
       .parent()
@@ -170,7 +170,7 @@ describe('アンケート編集機能', () => {
     cy.get('button[aria-label="削除"]').eq(0).click();
     cy.get('input[disabled]').should('have.value', 'システムA(削除済み)');
     cy.get('button[aria-label="復元"]').should('exist');
-    cy.get('input[type="checkbox"]').eq(2).should('be.disabled');
+    cy.get('input[type="checkbox"]').eq(3).should('be.disabled');
   });
 
   it('削除された既存の選択肢を復元できること', () => {
@@ -180,16 +180,16 @@ describe('アンケート編集機能', () => {
   });
 
   it('記述式のON/OFFを切り替えられること', () => {
-    cy.get('input[type="checkbox"]').eq(0).check();
-    cy.get('input[type="checkbox"]').eq(0).should('be.checked');
-    cy.get('input[type="checkbox"]').eq(0).uncheck();
-    cy.get('input[type="checkbox"]').eq(0).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(1).check();
+    cy.get('input[type="checkbox"]').eq(1).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(1).uncheck();
+    cy.get('input[type="checkbox"]').eq(1).should('not.be.checked');
   });
 
   it('新規で追加した質問を削除できること', () => {
     cy.get('button').contains('質問項目追加').click();
     cy.get('li').contains('プルダウン').click();
-    cy.contains('質問5: ')
+    cy.contains('質問6: ')
       .parent()
       .parent()
       .parent()
@@ -197,65 +197,65 @@ describe('アンケート編集機能', () => {
       .parent()
       .find('input')
       .type('aaaa');
-    cy.contains('質問5: aaaa')
+    cy.contains('質問6: aaaa')
       .parent()
       .parent()
       .parent()
       .find('button[aria-label="削除"]')
       .eq(0)
       .click();
-    cy.contains('質問5: aaaa').should('not.exist');
+    cy.contains('質問6: aaaa').should('not.exist');
   });
 
   it('既存の質問を削除できること', () => {
-    cy.get('button[aria-label="削除"]').eq(3).click();
-    cy.contains('質問5: システム名(削除済み)').should('exist');
-    cy.contains('質問5: システム名(削除済み)')
+    cy.get('button[aria-label="削除"]').eq(5).click();
+    cy.contains('質問6: 開発手法(削除済み)').should('exist');
+    cy.contains('質問6: 開発手法(削除済み)')
       .parent()
       .parent()
       .parent()
-      .find('input[value="select"]')
+      .find('input[value="radio"]')
       .should('be.disabled');
-    cy.contains('質問5: システム名(削除済み)')
+    cy.contains('質問6: 開発手法(削除済み)')
       .parent()
       .parent()
       .parent()
-      .find('input[value="システム名"]')
+      .find('input[value="開発手法"]')
       .should('be.disabled');
-    cy.contains('質問5: システム名(削除済み)')
+    cy.contains('質問6: 開発手法(削除済み)')
       .parent()
       .parent()
       .parent()
       .find('textarea')
       .should('be.disabled');
-    cy.contains('質問5: システム名(削除済み)')
+    cy.contains('質問6: 開発手法(削除済み)')
       .parent()
       .parent()
       .parent()
-      .find('input[value="システムA"]')
+      .find('input[value="アジャイル"]')
       .should('be.disabled');
-    cy.contains('質問5: システム名(削除済み)')
+    cy.contains('質問6: 開発手法(削除済み)')
       .parent()
       .parent()
       .parent()
       .find('input[type="checkbox"]')
       .eq(0)
       .should('be.disabled');
-    cy.contains('質問5: システム名(削除済み)')
+    cy.contains('質問6: 開発手法(削除済み)')
+      .parent()
+      .parent()
+      .parent()
+      .find('input[type="checkbox"]')
+      .eq(2)
+      .should('be.disabled');
+    cy.contains('質問6: 開発手法(削除済み)')
       .parent()
       .parent()
       .parent()
       .find('input[type="checkbox"]')
       .eq(3)
       .should('be.disabled');
-    cy.contains('質問5: システム名(削除済み)')
-      .parent()
-      .parent()
-      .parent()
-      .find('input[type="checkbox"]')
-      .eq(4)
-      .should('be.disabled');
-    cy.contains('質問5: システム名(削除済み)')
+    cy.contains('質問6: 開発手法(削除済み)')
       .parent()
       .parent()
       .parent()
@@ -277,7 +277,7 @@ describe('アンケート編集機能', () => {
 
   it('一番下の質問の下へボタンは非活性になっていること', () => {
     cy.get('button[aria-label="上へ"]')
-      .eq(2)
+      .eq(3)
       .next('button')
       .should('be.disabled');
   });
@@ -302,22 +302,22 @@ describe('編集機能 - 実際に編集する', () => {
   beforeEach(() => {
     cy.visit('/form-management');
     cy.origin(
-         Cypress.env('auth_url'),
+      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
       () => {
         cy.get('input[type="button"]').eq(1).click();
       }
     );
-    cy.origin(   Cypress.env('login_url'),() => {
+    cy.origin('https://login.microsoftonline.com', () => {
       cy.get('input[placeholder="メール、電話、Skype"]').type(
-        Cypress.env('login_email')
+        'test@PJHealthcheckWebForm.onmicrosoft.com'
       );
       cy.get('input[type = "submit"]').contains('次へ').click();
-      cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
+      cy.get('input[placeholder="パスワード"]').type('Healthcheck@123');
       cy.get('input[type = "submit"]').contains('サインイン').click();
       cy.get('input[type="button"]').click();
     });
     cy.origin(
-         Cypress.env('auth_url'),
+      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
       () => {}
     );
     cy.get('button[aria-label="edit"]').eq(1).click();
@@ -382,29 +382,29 @@ describe('編集機能 - 見た目のテスト', () => {
   beforeEach(() => {
     cy.visit('/form-management');
     cy.origin(
-         Cypress.env('auth_url'),
+      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
       () => {
         cy.get('input[type="button"]').eq(1).click();
       }
     );
-    cy.origin(   Cypress.env('login_url'),() => {
+    cy.origin('https://login.microsoftonline.com', () => {
       cy.get('input[placeholder="メール、電話、Skype"]').type(
-        Cypress.env('login_email')
+        'test@PJHealthcheckWebForm.onmicrosoft.com'
       );
       cy.get('input[type = "submit"]').contains('次へ').click();
-      cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
+      cy.get('input[placeholder="パスワード"]').type('Healthcheck@123');
       cy.get('input[type = "submit"]').contains('サインイン').click();
       cy.get('input[type="button"]').click();
     });
     cy.origin(
-         Cypress.env('auth_url'),
+      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
       () => {}
     );
     cy.get('button').contains('編集').click();
   });
 
   it('初期状態はどの質問も青くハイライトされていないこと', () => {
-    [...new Array(5)].map((_, i: number) => {
+    [...new Array(6)].map((_, i: number) => {
       cy.contains(`質問${i + 1}: `)
         .parent()
         .parent()
@@ -426,7 +426,7 @@ describe('編集機能 - 見た目のテスト', () => {
     cy.get('button').contains('質問項目追加').click();
     cy.get('li').contains('プルダウン').click();
 
-    cy.contains('質問5: ')
+    cy.contains('質問6: ')
       .parent()
       .parent()
       .parent()
@@ -434,8 +434,8 @@ describe('編集機能 - 見た目のテスト', () => {
   });
 
   it('既存の質問を削除すると、削除された質問のふちが青くハイライトされること', () => {
-    cy.get('button[aria-label="削除"]').eq(3).click();
-    cy.contains('質問5: システム名(削除済み)')
+    cy.get('button[aria-label="削除"]').eq(5).click();
+    cy.contains('質問6: 開発手法(削除済み)')
       .parent()
       .parent()
       .parent()
@@ -445,14 +445,14 @@ describe('編集機能 - 見た目のテスト', () => {
   it('新規で追加した質問を削除すると、どの質問もハイライトされていない状態になること', () => {
     cy.get('button').contains('質問項目追加').click();
     cy.get('li').contains('プルダウン').click();
-    cy.contains('質問5: ')
+    cy.contains('質問6: ')
       .parent()
       .parent()
       .parent()
       .find('button[aria-label="削除"]')
       .click();
 
-    [...new Array(5)].map((_, i: number) => {
+    [...new Array(6)].map((_, i: number) => {
       cy.contains(`質問${i + 1}: `)
         .parent()
         .parent()
@@ -488,14 +488,14 @@ describe('編集機能 - 見た目のテスト', () => {
   });
 
   it('質問を復元させると、その質問がハイライトされること', () => {
-    cy.get('button[aria-label="削除"]').eq(3).click();
-    cy.contains('質問5: システム名(削除済み)')
+    cy.get('button[aria-label="削除"]').eq(5).click();
+    cy.contains('質問6: 開発手法(削除済み)')
       .parent()
       .parent()
       .parent()
       .find('button[aria-label="復元"]')
       .click();
-    cy.contains('質問4: システム名')
+    cy.contains('質問5: 開発手法')
       .parent()
       .parent()
       .parent()

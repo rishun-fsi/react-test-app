@@ -1,7 +1,7 @@
 import * as pgPromise from 'pg-promise';
 import * as pg from 'pg-promise/typescript/pg-subset';
 import { fetchAnswers, createGetResponseBody } from '../../answer-metadata/get';
-import { connectDB } from '../../answer/db';
+import { connectDB } from '../../answer-metadata/db';
 import { Answer } from '../../answer-metadata/interface/Response';
 
 const password: string = process.env['PASSWORD']!;

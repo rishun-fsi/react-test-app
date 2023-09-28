@@ -4,3 +4,8 @@ export interface DBInheritance {
   question_id?: number;
   question_index?: number;
 }
+
+export interface FetchedInheritance {
+  is_same_user: boolean;
+  question_id?: number;
+}

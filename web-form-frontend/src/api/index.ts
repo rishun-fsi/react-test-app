@@ -17,6 +17,7 @@ import {
 } from '../interface/Questionnair';
 import { eventHeaders } from '../common/auth';
 import { removeTempAnswers } from '../common/answer';
+import { NotificationType } from '../interface/Notification';
 
 const API_BASE_URL =
   'http://localhost:5000';
@@ -33,7 +34,7 @@ export const fetchQuestions = async (
     ...headers
   });
 
-  return response.data.questions;
+  return response.data;
 };
 
 export const submitNewAnswers = async (
@@ -209,4 +210,15 @@ export const updateQuestionnair = async (questionnair: EditedQuestionnair) => {
   if (response.status >= 400) {
     throw new Error(response.data.message);
   }
+};
+
+
+export const fetchNotificationTypes = async (): Promise<NotificationType[]> => {
+  const headers: AxiosRequestConfig = await eventHeaders();
+
+  console.log("fetchNotificationTypes");
+  const response = await axios.get(`${API_BASE_URL}/notifications/type`, {
+    ...headers
+  });
+  return response.data.types;
 };

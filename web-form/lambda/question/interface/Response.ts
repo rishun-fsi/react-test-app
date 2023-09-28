@@ -13,4 +13,14 @@ export interface PutResponse {
   name?: string;
 }
 
-export type GetResponse = (Question | GroupedQuestion)[];
+export interface GetInheritanceResponse {
+  isSameUser: boolean;
+  questionId?: number;
+}
+
+export type GetQuestionResponse = (Question | GroupedQuestion)[];
+
+export interface GetResponse {
+  questions: GetQuestionResponse;
+  inheritance?: GetInheritanceResponse;
+}

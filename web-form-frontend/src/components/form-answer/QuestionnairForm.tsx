@@ -11,6 +11,7 @@ import Accordion from '../common/Accordion';
 import Snackbar from '../common/Snackbar';
 import { fetchQuestions, fetchQuestionnairById } from '../../api';
 import {
+  FetchedQuestion,
   GroupedQuestion,
   Question,
   QuestionResponse
@@ -43,10 +44,10 @@ const style = {
 };
 
 const expandQuestionResponse = (
-  questionResponse: QuestionResponse
+  questionResponse: FetchedQuestion[]
 ): Question[] => {
   return questionResponse
-    .map((question: Question | GroupedQuestion): Question | Question[] => {
+    .map((question: FetchedQuestion): Question | Question[] => {
       if ('group' in question) {
         return question.questions;
       }
@@ -74,7 +75,7 @@ const QuestionnairForm: React.FC<QuestionnairFormProps> = (props) => {
   const questionnairId: number = Number(location.pathname.split('/')[2]);
 
   const [questionnairName, setQuestionnairName] = useState<string>('');
-  const [questions, setQuestions] = useState<QuestionResponse>([]);
+  const [questions, setQuestions] = useState<FetchedQuestion[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isSnackbarOpen, setIsSnackbarOpen] = useState<boolean>(false);
   const [severity, setSeverity] = useState<AlertColor>('success');
@@ -88,7 +89,7 @@ const QuestionnairForm: React.FC<QuestionnairFormProps> = (props) => {
         questionnairId,
         false
       );
-      setQuestions(response);
+      setQuestions(response.questions);
 
       const metadata: QuestionnairMetaData = await fetchQuestionnairById(
         questionnairId
@@ -139,7 +140,6 @@ const QuestionnairForm: React.FC<QuestionnairFormProps> = (props) => {
   const submit = async () => {
     try {
       await props.sendAnswer();
-
       setSeverity('success');
       setSnackbarMessage('回答の送信が完了しました。');
       handleSnackbarOpen();

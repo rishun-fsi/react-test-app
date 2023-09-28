@@ -1,16 +1,11 @@
 import { EditedQuestion, AddedQuestion, SendingQuestion } from './Question';
+import { Inheritance } from './Inheritance';
 
 export interface Questionnair {
   userId: string;
   name: string;
   inheritance?: Inheritance;
   questions: SendingQuestion[];
-}
-
-export interface Inheritance {
-  isSameUser: boolean;
-  questionIndex?: number;
-  questionId?: number;
 }
 
 export interface QuestionnairMetaData {

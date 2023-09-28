@@ -64,6 +64,7 @@ describe('GETメソッドのテスト', () => {
         { id: 2, name: 'システムB', isDescription: false, isDeleted: false },
         { id: 3, name: 'システムC', isDescription: false, isDeleted: false }
       ],
+      canInherit: false,
       isDeleted: false,
       priority: 1
     });
@@ -91,6 +92,7 @@ describe('GETメソッドのテスト', () => {
               isDeleted: false
             }
           ],
+          canInherit: true,
           isDeleted: false,
           priority: 2
         },
@@ -112,12 +114,18 @@ describe('GETメソッドのテスト', () => {
             },
             { id: 10, name: 'その他', isDescription: true, isDeleted: false }
           ],
+          canInherit: true,
           isDeleted: false,
           priority: 3
         }
       ]
     });
     expect(JSON.parse(response.body).questions.length).toBe(4);
+
+    expect(JSON.parse(response.body).inheritance).toEqual({
+      isSameUser: false,
+      questionId: 1
+    });
   });
 
   test('isAllにtrueを指定する場合', async () => {

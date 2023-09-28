@@ -3,6 +3,7 @@ import { connectDB } from './db';
 import { createPostResponseBody } from './post';
 import { createGetResponseBody } from './get';
 import { createPutResponseBody } from './put';
+import { createDeleteResponseBody } from './delete';
 import { createChunkPostResponseBody } from './chunk-post';
 import { createChunkPutResponseBody } from './chunk-put';
 import { PostEventBody } from './interface/EventBody';
@@ -11,7 +12,7 @@ export const lambdaHandler = async (
   event: APIGatewayEvent,
   context: Context
 ): Promise<APIGatewayProxyResult> => {
-  const allowedHttpMethods: string[] = ['GET', 'POST', 'PUT'];
+  const allowedHttpMethods: string[] = ['GET', 'POST', 'PUT', 'DELETE'];
   if (!allowedHttpMethods.includes(event.httpMethod)) {
     throw new Error('The request method is prohibited');
   }
@@ -23,7 +24,10 @@ export const lambdaHandler = async (
 
   if (
     (event.httpMethod === 'GET' && !event.queryStringParameters) ||
-    ((event.httpMethod === 'POST' || event.httpMethod === 'PUT') && !event.body)
+    ((event.httpMethod === 'POST' ||
+      event.httpMethod === 'PUT' ||
+      event.httpMethod === 'DELETE') &&
+      !event.body)
   ) {
     return createResponse(400, { message: 'データを指定してください。' });
   }
@@ -56,12 +60,18 @@ export const lambdaHandler = async (
         db
       );
       return createResponse(chunkPutResponse.statusCode, chunkPutResponse.body);
-    } else {
+    } else if (event.httpMethod === 'PUT') {
       const putResponse = await createPutResponseBody(
         JSON.parse(event.body!),
         db
       );
       return createResponse(putResponse.statusCode, putResponse.body);
+    } else {
+      const deleteResponse = await createDeleteResponseBody(
+        JSON.parse(event.body!),
+        db
+      );
+      return createResponse(deleteResponse.statusCode, deleteResponse.body);
     }
   } catch (error) {
     console.error(error);
@@ -79,7 +89,7 @@ const createResponse = (
     headers: {
       'Access-Control-Allow-Headers': 'Content-Type',
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,OPTIONS'
+      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS'
     },
     body: JSON.stringify(body)
   };

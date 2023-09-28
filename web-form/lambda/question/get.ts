@@ -8,7 +8,12 @@ import {
   QuestionGroupByItem,
   GroupedQuestion
 } from './interface/Question';
-import { GetResponse } from './interface/Response';
+import { FetchedInheritance } from './interface/Inheritance';
+import {
+  GetInheritanceResponse,
+  GetQuestionResponse,
+  GetResponse
+} from './interface/Response';
 
 const isInt = (x: any): boolean => {
   return typeof x === 'number' && x % 1 === 0;
@@ -41,7 +46,7 @@ export const fetchQuestions = async (
   db: pgPromise.IDatabase<Record<string, never>, pg.IClient>,
   questionnairId: number,
   isAll: boolean
-): Promise<GetResponse> => {
+): Promise<GetQuestionResponse> => {
   const query: string =
     'SELECT q.id, q.question, q.required, q.headline, q.questionnair_id, q.can_inherit, i.item_name AS item, i.id AS item_id, i.is_description, t.question_type AS type, g.name AS group, q.group_id, q.is_deleted AS is_question_deleted, i.is_deleted AS is_item_deleted, q.priority FROM questions AS q ' +
     'LEFT JOIN question_items AS i ON q.id = i.question_id ' +
@@ -54,7 +59,7 @@ export const fetchQuestions = async (
     } ` +
     'ORDER BY q.priority, i.priority;';
 
-  const questions: GetResponse = await db
+  const questions: GetQuestionResponse = await db
     .any(query, [questionnairId])
     .then((data) => {
       return formData(data);
@@ -66,7 +71,40 @@ export const fetchQuestions = async (
   return questions;
 };
 
-const formData = (fetchedQuestions: FetchedQuestion[]): GetResponse => {
+export const fetchInheritance = async (
+  db: pgPromise.IDatabase<Record<string, never>, pg.IClient>,
+  questionnairId: number
+): Promise<GetInheritanceResponse | undefined> => {
+  const query: string =
+    'SELECT is_same_user, question_id FROM inheritances WHERE questionnair_id = $1';
+
+  const inheritance: GetInheritanceResponse | undefined = await db
+    .any(query, [questionnairId])
+    .then((data) => {
+      return formInheritance(data);
+    })
+    .catch((error) => {
+      throw error;
+    });
+
+  return inheritance;
+};
+
+export const formInheritance = (
+  inheritance: FetchedInheritance[]
+): GetInheritanceResponse | undefined => {
+  return inheritance.length === 0
+    ? undefined
+    : {
+        isSameUser: inheritance[0].is_same_user,
+        questionId:
+          inheritance[0].question_id === null
+            ? undefined
+            : inheritance[0].question_id
+      };
+};
+
+const formData = (fetchedQuestions: FetchedQuestion[]): GetQuestionResponse => {
   // 質問idの重複なしリストを作成
   const ids: number[] = [
     ...new Set(fetchedQuestions.map((fetched: FetchedQuestion) => fetched.id))
@@ -112,6 +150,7 @@ const groupByItem = (
       items,
       group: representative.group !== undefined ? representative.group : '',
       groupId: representative.group_id,
+      canInherit: representative.can_inherit,
       isDeleted: representative.is_question_deleted,
       priority: representative.priority
     };
@@ -129,13 +168,16 @@ const deleteGroup = (
       required: question.required,
       headline: question.headline,
       items: question.items,
+      canInherit: question.canInherit,
       isDeleted: question.isDeleted,
       priority: question.priority
     })
   );
 };
 
-const sortQuestionsById = (response: GetResponse): GetResponse => {
+const sortQuestionsById = (
+  response: GetQuestionResponse
+): GetQuestionResponse => {
   return [...response].sort((a, b) => {
     const idA = 'groupId' in a ? a.questions[0].priority : a.priority;
     const idB = 'groupId' in b ? b.questions[0].priority : b.priority;
@@ -146,7 +188,7 @@ const sortQuestionsById = (response: GetResponse): GetResponse => {
 
 const groupByGroup = (
   questionsGroupByItem: QuestionGroupByItem[]
-): GetResponse => {
+): GetQuestionResponse => {
   // グループを持った設問を抽出
   const questionHasGroup: QuestionGroupByItem[] = questionsGroupByItem.filter(
     (question: QuestionGroupByItem) => question.group!
@@ -196,12 +238,18 @@ export const createGetResponseBody = async (
     );
     const isAll: boolean = convertStringToBoolean(queryStringParameters.isAll);
 
-    const questions: GetResponse = await fetchQuestions(
+    const questions: GetQuestionResponse = await fetchQuestions(
       db,
       questionnairId,
       isAll
     );
-    const body = { message: 'success', questions };
+
+    const inheritance: GetInheritanceResponse | undefined =
+      await fetchInheritance(db, questionnairId);
+
+    const response: GetResponse = { questions, inheritance };
+
+    const body = { message: 'success', ...response };
     return { statusCode: 200, body };
   } catch (e) {
     if (

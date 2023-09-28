@@ -9,6 +9,8 @@ DROP TABLE IF EXISTS questions;
 DROP TABLE IF EXISTS question_groups;
 DROP TABLE IF EXISTS question_types;
 DROP TABLE IF EXISTS questionnairs;
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS notification_types;
 
 CREATE TABLE questionnairs(
   id SERIAL,
@@ -106,4 +108,25 @@ CREATE TABLE answers(
   foreign key(item_id) references question_items(id),
   foreign key(metadata_id) references answer_metadata(id),
   CONSTRAINT answer_null_check CHECK(NOT(item_id IS NULL AND text_answer IS NULL))
+);
+
+CREATE TABLE notification_types(
+  id SERIAL,
+  name VARCHAR(20) not null,
+  severity INTEGER not null,
+  primary key(id)
+);
+
+CREATE TABLE notifications(
+  id SERIAL,
+  title VARCHAR(200) not null,
+  content VARCHAR(1000) not null,
+  user_id VARCHAR(50) not null,
+  type_id INTEGER not null,
+  created_date DATE not null,
+  updated_date DATE,
+  publish_timestamp TIMESTAMP,
+  expire_timestamp TIMESTAMP,
+  primary key(id),
+  foreign key(type_id) references notification_types(id)
 );

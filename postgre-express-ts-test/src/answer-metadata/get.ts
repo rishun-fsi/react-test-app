@@ -1,26 +1,13 @@
 import * as pgPromise from 'pg-promise';
 import * as pg from 'pg-promise/typescript/pg-subset';
-import { Answer } from './interface/Response';
+import { checkNumberFormat } from './common';
 import { FetchedAnswer } from './interface/Answer';
-
-const isInt = (x: any): boolean => {
-  return typeof x === 'number' && x % 1 === 0;
-};
-
-const checkNumberFormat = (numberData: number, min: number, max?: number) => {
-  if (
-    numberData < min ||
-    !isInt(numberData) ||
-    (max !== undefined && numberData > max)
-  ) {
-    throw new Error('不正なパラメータが指定されました。');
-  }
-};
+import { Answer } from './interface/Response';
 
 export const fetchAnswers = async (
   db: pgPromise.IDatabase<Record<string, never>, pg.IClient>,
   metadataId: number
-) => {
+): Promise<Answer[]> => {
   const answersPerMetadataQuery: string =
     'SELECT id AS answer_id, question_id, item_id, text_answer ' +
     'FROM answers WHERE metadata_id = $1 ' +

@@ -14,7 +14,7 @@ import EditableQuestionCard from './EditableQuestionCard';
 import AddQuestionButton from './AddQuestionButton';
 import InheritanceForm from './InheritanceForm';
 import Snackbar from '../common/Snackbar';
-import { Inheritance } from '../../interface/Questionnair';
+import { Inheritance } from '../../interface/Inheritance';
 
 type EditableQuestionnairProps = {
   questionnairName: string;
@@ -31,6 +31,8 @@ type EditableQuestionnairProps = {
   updateQuestionItem: Function;
   switchOrder: Function;
   save: Function;
+  inheritance: Inheritance;
+  setInheritance: Dispatch<SetStateAction<Inheritance>>;
   restoreQuestion?: Function;
   restoreQuestionItem?: Function;
   canSave?: boolean;
@@ -142,9 +144,6 @@ const EditableQuestionnair: React.FC<EditableQuestionnairProps> = (props) => {
 
   const [focusingQuestionIndex, setFocusingQuestionIndex] =
     useState<number>(-1);
-  const [inheritanceQuestionId, setInheritanceQuestionId] = useState<number>(0);
-  const [isInheritedFromSameUser, setIsInheritedFromSameUser] =
-    useState<boolean>(true);
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
 
@@ -154,13 +153,14 @@ const EditableQuestionnair: React.FC<EditableQuestionnairProps> = (props) => {
     (question: EditingQuestion) => question.canInherit
   );
   const inheritanceQuestionIndex: number = questions.findIndex(
-    (question) => question.id === inheritanceQuestionId
+    (question) => question.id === props.inheritance.questionId!
   );
 
   const inheritanceOptions = questions
     .filter(
       (question: EditingQuestion) =>
-        !('isDeleted' in question && question.isDeleted)
+        !('isDeleted' in question && question.isDeleted) &&
+        question.type !== 'check'
     )
     .map((question: EditingQuestion) => ({
       id: question.id,
@@ -168,7 +168,7 @@ const EditableQuestionnair: React.FC<EditableQuestionnairProps> = (props) => {
     }));
 
   const isInheritanceError: boolean =
-    inheritanceQuestionId === 0 && !isInheritedFromSameUser;
+    props.inheritance.questionId! === 0 && !props.inheritance.isSameUser;
 
   return (
     <>
@@ -185,10 +185,8 @@ const EditableQuestionnair: React.FC<EditableQuestionnairProps> = (props) => {
         <div>
           <InheritanceForm
             options={inheritanceOptions}
-            inheritanceQuestionId={inheritanceQuestionId}
-            setInheritanceQuestionId={setInheritanceQuestionId}
-            isInheritedFromSameUser={isInheritedFromSameUser}
-            setIsInheritedFromSameUser={setIsInheritedFromSameUser}
+            inheritance={props.inheritance}
+            setInheritance={props.setInheritance}
             isError={isInheritanceError}
           />
         </div>
@@ -215,7 +213,9 @@ const EditableQuestionnair: React.FC<EditableQuestionnairProps> = (props) => {
               (questions[index + 1] as ExistingQuestion).isDeleted)
           }
           isFocusing={index === focusingQuestionIndex}
-          deletable={!(isInheritance && inheritanceQuestionId === question.id)}
+          deletable={
+            !(isInheritance && props.inheritance.questionId === question.id)
+          }
           onClick={onClickCard(setFocusingQuestionIndex)(index)}
         />
       ))}
@@ -235,7 +235,7 @@ const EditableQuestionnair: React.FC<EditableQuestionnairProps> = (props) => {
                 questionnairName,
                 questions,
                 createInheritance(
-                  isInheritedFromSameUser,
+                  props.inheritance.isSameUser,
                   inheritanceQuestionIndex,
                   questions
                 )

@@ -1,0 +1,64 @@
+{
+  "headers": {},
+  "multiValueHeaders": {},
+  "httpMethod": "GET",
+  "body": "{}",
+  "isBase64Encoded": true,
+  "path": "/answer/inheritance",
+  "pathParameters": {},
+  "queryStringParameters": {
+    "questionnairId": "1",
+    "questionId": "1",
+    "itemId": "1"
+  },
+  "multiValueQueryStringParameters": {
+    "hoge": [
+      ""
+    ]
+  },
+  "stageVariables": {
+    "hoge": ""
+  },
+  "requestContext": {
+    "accountId": "",
+    "apiId": "",
+    "authorizer": {
+      "hoge": ""
+    },
+    "protocol": "",
+    "httpMethod": "",
+    "identity": {
+      "accessKey": "",
+      "accountId": "",
+      "apiKey": "",
+      "apiKeyId": "",
+      "caller": "",
+      "clientCert": {
+        "clientCertPem": "",
+        "serialNumber": "",
+        "subjectDN": "",
+        "issuerDN": "",
+        "validity": {
+          "notAfter": "",
+          "notBefore": ""
+        }
+      },
+      "cognitoAuthenticationProvider": "",
+      "cognitoAuthenticationType": "",
+      "cognitoIdentityId": "",
+      "cognitoIdentityPoolId": "",
+      "principalOrgId": "",
+      "sourceIp": "",
+      "user": "",
+      "userAgent": "",
+      "userArn": ""
+    },
+    "path": "",
+    "stage": "",
+    "requestId": "",
+    "requestTimeEpoch": 0,
+    "resourceId": "",
+    "resourcePath": ""
+  },
+  "resource": ""
+}

@@ -12,6 +12,7 @@ import AnswerPage from './components/form-answer/AnswerPage';
 import AnswerEditPage from './components/form-answer/AnswerEditPage';
 import FileIOTopPage from './components/file-io/FileIOTopPage';
 import CSVUploadPage from './components/file-io/CSVUploadPage';
+import NotificationRegisterPage from './components/notification-register/NotificationRegisterPage';
 
 const router = createBrowserRouter([
   {
@@ -47,7 +48,11 @@ const router = createBrowserRouter([
     element: <App component={<AnswersTable />} />
   },
   { path: 'file-io', element: <App component={<FileIOTopPage />} /> },
-  { path: 'csv-upload', element: <App component={<CSVUploadPage />} /> }
+  { path: 'csv-upload', element: <App component={<CSVUploadPage />} /> },
+  {
+    path: 'notification-register',
+    element: <App component={<NotificationRegisterPage />} />
+  }
 ]);
 
 const root = ReactDOM.createRoot(

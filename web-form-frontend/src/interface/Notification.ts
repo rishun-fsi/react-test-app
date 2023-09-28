@@ -4,3 +4,8 @@ export interface Notification {
   content: String;
   registrant: String;
 }
+
+export interface NotificationType {
+  id: number;
+  name: string;
+}

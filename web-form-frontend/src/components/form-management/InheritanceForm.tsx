@@ -6,6 +6,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
+import { Inheritance } from '../../interface/Inheritance';
 
 type Option = {
   id: number;
@@ -14,17 +15,15 @@ type Option = {
 
 type InheritanceFormProps = {
   options: Option[];
-  inheritanceQuestionId: number;
-  setInheritanceQuestionId: Dispatch<SetStateAction<number>>;
-  isInheritedFromSameUser: boolean;
-  setIsInheritedFromSameUser: Dispatch<SetStateAction<boolean>>;
+  inheritance: Inheritance;
+  setInheritance: Dispatch<SetStateAction<Inheritance>>;
   isError: boolean;
 };
 
 const InheritanceForm: React.FC<InheritanceFormProps> = (props) => {
   const handleSelectChange = (event: SelectChangeEvent) => {
     const id = Number(event.target.value);
-    props.setInheritanceQuestionId(id);
+    props.setInheritance({ ...props.inheritance, questionId: id });
   };
 
   return (
@@ -37,7 +36,7 @@ const InheritanceForm: React.FC<InheritanceFormProps> = (props) => {
         <Select
           labelId="select-label"
           label="前回回答を反映する際のキーとする質問"
-          value={String(props.inheritanceQuestionId)}
+          value={String(props.inheritance.questionId)}
           onChange={handleSelectChange}
         >
           <MenuItem value="0">指定しない</MenuItem>
@@ -57,9 +56,12 @@ const InheritanceForm: React.FC<InheritanceFormProps> = (props) => {
         <FormControlLabel
           control={<Switch />}
           label="同一ユーザーの前回回答を参照する"
-          checked={props.isInheritedFromSameUser}
+          checked={props.inheritance.isSameUser}
           onChange={() => {
-            props.setIsInheritedFromSameUser(!props.isInheritedFromSameUser);
+            props.setInheritance({
+              ...props.inheritance,
+              isSameUser: !props.inheritance.isSameUser
+            });
           }}
         />
       </FormControl>

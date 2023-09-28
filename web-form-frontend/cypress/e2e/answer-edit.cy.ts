@@ -2,29 +2,22 @@ describe('編集画面への到達テスト', () => {
   beforeEach(() => {
     cy.visit('/form-answers-table');
     cy.origin(
-         Cypress.env('auth_url'),
+      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
       () => {
-        //cy.get('input[type="button"]').eq(1).click();
-        cy.contains('Continue with Facebook').click({force: true});
+        cy.get('input[type="button"]').eq(1).click();
       }
     );
-    cy.origin(   Cypress.env('login_url'),() => {
-      // cy.get('input[placeholder="メール、電話、Skype"]').type(
-      //   Cypress.env('login_email')
-      // );
-      // cy.get('input[type = "submit"]').contains('次へ').click();
-      // cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
-      // cy.get('input[type = "submit"]').contains('サインイン').click();
-      // cy.get('input[type="button"]').click();
-
-      cy.get('input[placeholder="メールアドレスまたは電話番号"]').type(
-        Cypress.env('login_email')
+    cy.origin('https://login.microsoftonline.com', () => {
+      cy.get('input[placeholder="メール、電話、Skype"]').type(
+        'test@PJHealthcheckWebForm.onmicrosoft.com'
       );
-      cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
-      cy.get('#loginbutton').click({force: true});
+      cy.get('input[type = "submit"]').contains('次へ').click();
+      cy.get('input[placeholder="パスワード"]').type('Healthcheck@123');
+      cy.get('input[type = "submit"]').contains('サインイン').click();
+      cy.get('input[type="button"]').click();
     });
     cy.origin(
-         Cypress.env('auth_url'),
+      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
       () => {}
     );
   });
@@ -32,7 +25,7 @@ describe('編集画面への到達テスト', () => {
   it('回答編集画面への遷移', () => {
     cy.get('button').eq(2).click();
     cy.get('input[aria-labelledby="enhanced-table-checkbox-1"]').check();
-    cy.get('#action-select').click({force: true});
+    cy.get('#action-select').click();
     cy.get('li[data-value="editAnswer"]').click();
 
     cy.url().should('eq', 'http://localhost:3000/form-answer-edit/1/1');
@@ -43,29 +36,22 @@ describe('回答の編集テスト', () => {
   beforeEach(() => {
     cy.visit('/form-answer-edit/1/1');
     cy.origin(
-         Cypress.env('auth_url'),
+      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
       () => {
-        // cy.get('input[type="button"]').eq(1).click();
-        cy.contains('Continue with Facebook').click({force: true});
+        cy.get('input[type="button"]').eq(1).click();
       }
     );
-    cy.origin(   Cypress.env('login_url'),() => {
-      // cy.get('input[placeholder="メール、電話、Skype"]').type(
-      //   Cypress.env('login_email')
-      // );
-      // cy.get('input[type = "submit"]').contains('次へ').click();
-      // cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
-      // cy.get('input[type = "submit"]').contains('サインイン').click();
-      // cy.get('input[type="button"]').click();
-
-      cy.get('input[placeholder="メールアドレスまたは電話番号"]').type(
-        Cypress.env('login_email')
+    cy.origin('https://login.microsoftonline.com', () => {
+      cy.get('input[placeholder="メール、電話、Skype"]').type(
+        'test@PJHealthcheckWebForm.onmicrosoft.com'
       );
-      cy.get('input[placeholder="パスワード"]').type(Cypress.env('login_pwd'));
-      cy.get('#loginbutton').click({force: true});
+      cy.get('input[type = "submit"]').contains('次へ').click();
+      cy.get('input[placeholder="パスワード"]').type('Healthcheck@123');
+      cy.get('input[type = "submit"]').contains('サインイン').click();
+      cy.get('input[type="button"]').click();
     });
     cy.origin(
-         Cypress.env('auth_url'),
+      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
       () => {}
     );
     cy.get('[role="button"]').eq(0).as('systemSelect');
@@ -76,7 +62,6 @@ describe('回答の編集テスト', () => {
   it('初期データとして回答が入っていること', () => {
     cy.get('@systemSelect').should('have.text', 'システムA');
     cy.get('input[type="radio"]').eq(0).should('be.checked');
-    cy.get('input[type="text"]').eq(1).should('not.have.value');
   });
 
   it('選択形式の設問で入力できること', () => {
@@ -96,10 +81,7 @@ describe('回答の編集テスト', () => {
 
   it('チェック形式の設問で入力できること', () => {
     cy.get('@devEnvAccordion').click();
-    cy.get('input[type="checkbox"]').eq(0).check();
-    cy.get('input[type="checkbox"]').eq(0).should('be.checked');
     cy.get('input[type="checkbox"]').eq(1).check();
-    cy.get('input[type="checkbox"]').eq(0).should('be.checked');
     cy.get('input[type="checkbox"]').eq(1).should('be.checked');
     cy.get('input[type="checkbox"]').eq(1).uncheck();
     cy.get('input[type="checkbox"]').eq(1).should('not.be.checked');
@@ -149,7 +131,7 @@ describe('回答の編集テスト', () => {
     cy.get('input[type="checkbox"]').eq(3).should('not.be.checked');
     cy.get('input[type="checkbox"]').eq(4).should('not.be.checked');
     cy.get('@leadTimeSelect').should('have.text', '1日以内');
-    cy.get('input[type="text"]').eq(1).should('have.value', 'はい');
+    cy.get('input[type="text"]').eq(1).should('have.value', '20');
   });
 
   it('回答を送信したときに保存した内容が反映されること', () => {
@@ -171,7 +153,7 @@ describe('回答の編集テスト', () => {
     cy.get('@systemSelect').should('not.have.value', 'システムB');
     cy.get('input[type="radio"]').eq(0).should('not.be.checked');
     cy.get('input[type="radio"]').eq(1).should('be.checked');
-    cy.get('input[type="checkbox"]').eq(0).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(0).should('be.checked');
     cy.get('input[type="checkbox"]').eq(1).should('not.be.checked');
     cy.get('input[type="checkbox"]').eq(2).should('be.checked');
     cy.get('input[type="checkbox"]').eq(3).should('not.be.checked');
@@ -182,7 +164,7 @@ describe('回答の編集テスト', () => {
   after(() => {
     cy.visit('/form-answer-edit/1/1');
     cy.origin(
-         Cypress.env('auth_url'),
+      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
       () => {}
     );
 

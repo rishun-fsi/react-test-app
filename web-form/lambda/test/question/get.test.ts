@@ -1,8 +1,11 @@
 import * as pgPromise from 'pg-promise';
 import * as pg from 'pg-promise/typescript/pg-subset';
-import { fetchQuestions } from '../../question/get';
+import { fetchQuestions, fetchInheritance } from '../../question/get';
 import { connectDB } from '../../answer/db';
-import { GetResponse } from '../../question/interface/Response';
+import {
+  GetQuestionResponse,
+  GetInheritanceResponse
+} from '../../question/interface/Response';
 
 const password: string = process.env['PASSWORD']!;
 const db: pgPromise.IDatabase<Record<string, never>, pg.IClient> = connectDB(
@@ -10,7 +13,7 @@ const db: pgPromise.IDatabase<Record<string, never>, pg.IClient> = connectDB(
 );
 
 test('削除されていない質問のみを取得する場合', async () => {
-  const questions: GetResponse = await fetchQuestions(db, 1, false);
+  const questions: GetQuestionResponse = await fetchQuestions(db, 1, false);
   expect(questions[0]).toEqual({
     id: 1,
     question: '対象のアプリ・システム名を選択してください。',
@@ -22,6 +25,7 @@ test('削除されていない質問のみを取得する場合', async () => {
       { id: 2, name: 'システムB', isDescription: false, isDeleted: false },
       { id: 3, name: 'システムC', isDescription: false, isDeleted: false }
     ],
+    canInherit: false,
     isDeleted: false,
     priority: 1
   });
@@ -44,6 +48,7 @@ test('削除されていない質問のみを取得する場合', async () => {
             isDeleted: false
           }
         ],
+        canInherit: true,
         isDeleted: false,
         priority: 2
       },
@@ -65,6 +70,7 @@ test('削除されていない質問のみを取得する場合', async () => {
           },
           { id: 10, name: 'その他', isDescription: true, isDeleted: false }
         ],
+        canInherit: true,
         isDeleted: false,
         priority: 3
       }
@@ -73,8 +79,31 @@ test('削除されていない質問のみを取得する場合', async () => {
   expect(questions.length).toBe(4);
 });
 
+test('前回回答の継承に関する情報を取得する場合(継承情報が存在する場合)', async () => {
+  const inheritance: GetInheritanceResponse | undefined =
+    await fetchInheritance(db, 1);
+  expect(inheritance).toEqual({
+    isSameUser: false,
+    questionId: 1
+  });
+});
+
+test('前回回答の継承に関する情報を取得する場合(継承情報として質問IDを指定していない場合)', async () => {
+  const inheritance: GetInheritanceResponse | undefined =
+    await fetchInheritance(db, 2);
+  expect(inheritance).toEqual({
+    isSameUser: true
+  });
+});
+
+test('前回回答の継承に関する情報を取得する場合(継承情報が存在しない場合)', async () => {
+  const inheritance: GetInheritanceResponse | undefined =
+    await fetchInheritance(db, 3);
+  expect(inheritance).toEqual(undefined);
+});
+
 test('削除されている質問を含めて取得する場合', async () => {
-  const questions: GetResponse = await fetchQuestions(db, 1, true);
+  const questions: GetQuestionResponse = await fetchQuestions(db, 1, true);
 
   expect(questions.length).toBe(5);
 });

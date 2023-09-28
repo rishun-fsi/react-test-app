@@ -1,0 +1,63 @@
+{
+  "headers": {},
+  "multiValueHeaders": {},
+  "httpMethod": "POST",
+  "isBase64Encoded": true,
+  "path": "",
+  "pathParameters": {
+    "hoge": ""
+  },
+  "queryStringParameters": {
+    "hoge": ""
+  },
+  "multiValueQueryStringParameters": {
+    "hoge": [
+      ""
+    ]
+  },
+  "stageVariables": {
+    "hoge": ""
+  },
+  "requestContext": {
+    "accountId": "",
+    "apiId": "",
+    "authorizer": {
+      "hoge": ""
+    },
+    "protocol": "",
+    "httpMethod": "",
+    "identity": {
+      "accessKey": "",
+      "accountId": "",
+      "apiKey": "",
+      "apiKeyId": "",
+      "caller": "",
+      "clientCert": {
+        "clientCertPem": "",
+        "serialNumber": "",
+        "subjectDN": "",
+        "issuerDN": "",
+        "validity": {
+          "notAfter": "",
+          "notBefore": ""
+        }
+      },
+      "cognitoAuthenticationProvider": "",
+      "cognitoAuthenticationType": "",
+      "cognitoIdentityId": "",
+      "cognitoIdentityPoolId": "",
+      "principalOrgId": "",
+      "sourceIp": "",
+      "user": "",
+      "userAgent": "",
+      "userArn": ""
+    },
+    "path": "",
+    "stage": "",
+    "requestId": "",
+    "requestTimeEpoch": 0,
+    "resourceId": "",
+    "resourcePath": ""
+  },
+  "resource": ""
+}

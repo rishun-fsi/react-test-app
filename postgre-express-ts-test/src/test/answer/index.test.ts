@@ -2,6 +2,7 @@ import { Context, APIGatewayEvent } from 'aws-lambda';
 import { lambdaHandler } from '../../answer';
 import {
   ChunkPutEventBody,
+  DeleteEventBody,
   PostEventBody,
   PutEventBody
 } from '../../answer/interface/EventBody';
@@ -9,6 +10,7 @@ import { NewAnswer } from '../../answer/interface/Answer';
 import * as postEvent from './json/post.json';
 import * as getEvent from './json/get.json';
 import * as putEvent from './json/put.json';
+import * as deleteEvent from './json/delete.json';
 import * as chunkPutEvent from './json/chunk-put.json';
 import * as chunkPostEvent from './json/chunk-post.json';
 
@@ -104,10 +106,10 @@ describe('GETメソッドのテスト', () => {
         }
       ],
       metadataId: 1,
-      answeredDate: '2023-07-10',
+      answeredDate: '2023-10-01',
       userId: 'userZ',
       updateUser: 'userY',
-      updatedDate: '2023-08-10'
+      updatedDate: '2023-10-10'
     });
     expect(JSON.parse(response.body).answers[1]).toEqual({
       answer: [
@@ -139,10 +141,10 @@ describe('GETメソッドのテスト', () => {
         }
       ],
       metadataId: 2,
-      answeredDate: '2023-07-11',
+      answeredDate: '2023-10-02',
       userId: 'userY',
       updateUser: 'userX',
-      updatedDate: '2023-08-11'
+      updatedDate: '2023-10-11'
     });
     expect(typeof JSON.parse(response.body).totalCount).toBe('number');
   });
@@ -195,6 +197,25 @@ describe('PUTメソッドのテスト', () => {
   };
 
   test('put', async () => {
+    const response = await lambdaHandler(request, context);
+    expect(response.statusCode).toBe(200);
+    expect(JSON.parse(response.body).message).toBe('success');
+  });
+});
+
+describe('DELETEメソッド', () => {
+  const deleteBody: DeleteEventBody = {
+    metadataIds: [14],
+    userId: 'test',
+    questionnairId: 1
+  };
+
+  const request: APIGatewayEvent = {
+    ...deleteEvent,
+    body: JSON.stringify(deleteBody)
+  };
+
+  test('delete', async () => {
     const response = await lambdaHandler(request, context);
     expect(response.statusCode).toBe(200);
     expect(JSON.parse(response.body).message).toBe('success');
