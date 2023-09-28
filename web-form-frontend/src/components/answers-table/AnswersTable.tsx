@@ -176,7 +176,7 @@ const AnswersTable: React.FC = () => {
               headers={headers}
             />
             <TableBody>
-              {metaData.map((answer: AnswersTableMetaData) => {
+              {metaData.map((answer: AnswersTableMetaData, index: number) => {
                 const isItemSelected = isSelected(answer.metadataId);
                 const labelId = `enhanced-table-checkbox-${answer.metadataId}`;
                 const formedAnswer: AnswerPerQuestion[] = updateAnswer(
@@ -205,7 +205,7 @@ const AnswersTable: React.FC = () => {
                         }}
                       />
                     </TableCell>
-                    <TableCell>{String(answer.metadataId)}</TableCell>
+                    <TableCell>{ page * limit + index+1}</TableCell>
                     {formedAnswer.map((answer, index) => {
                       return (
                         <TableCell key={index}>{answer.itemName}</TableCell>
