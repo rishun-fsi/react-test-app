@@ -39,7 +39,7 @@ const TableToolbar: React.FC<TableToolbarProps> = (props) => {
   const handleChange = (event: SelectChangeEvent) => {
     setAction(event.target.value);
     if (event.target.value === 'editAnswer') {
-      navigate(`/form-answer-edit/1/${props.selected[0]}`);
+      navigate(`/form-answer-edit/${questionnairId}/${props.selected[0]}`);
     }
   };
 
