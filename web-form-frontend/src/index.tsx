@@ -13,6 +13,7 @@ import AnswerEditPage from './components/form-answer/AnswerEditPage';
 import FileIOTopPage from './components/file-io/FileIOTopPage';
 import CSVUploadPage from './components/file-io/CSVUploadPage';
 import NotificationRegisterPage from './components/notification-register/NotificationRegisterPage';
+import NotificationEditorPage from './components/notification-editor/NotificationEditorPage';
 
 const router = createBrowserRouter([
   {
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
   {
     path: 'notification-register',
     element: <App component={<NotificationRegisterPage />} />
+  },
+  {
+    path: 'notification-editor',
+    element: <App component={<NotificationEditorPage />} />
   }
 ]);
 

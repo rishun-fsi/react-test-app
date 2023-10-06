@@ -13,7 +13,12 @@ import { Notification } from '../../interface/Notification';
 import { fetchNotifications } from '../../api';
 import NotificationModal from './NotificationModal';
 
-const NotificationTable: React.FC = () => {
+// Define the props interface
+interface NotificationTableProps {
+  onColumnClick?: () => void;
+}
+
+const NotificationTable: React.FC<NotificationTableProps> = ({ onColumnClick }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isDetailOpen, setIsDetailOpen] = useState<boolean>(false);
   const [targetId, setTargetId] = useState<number>(0);
@@ -35,7 +40,7 @@ const NotificationTable: React.FC = () => {
     if (targetNotification === undefined) return '';
     return targetNotification.title;
   };
-
+  
   return (
     <Box sx={{ width: '100%', overflow: 'hidden' }}>
       <Paper sx={{ width: '100%', mb: 2 }} variant="outlined" square>
@@ -55,6 +60,7 @@ const NotificationTable: React.FC = () => {
                 <TableRow
                   key={notification.id}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  onClick={onColumnClick}
                 >
                   <TableCell>{notification.createdDate}</TableCell>
                   <TableCell>{notification.type}</TableCell>
