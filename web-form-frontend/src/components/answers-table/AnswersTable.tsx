@@ -9,6 +9,7 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
+import { Auth } from 'aws-amplify';
 import {
   AnswerPerQuestion,
   AnswersTableHeader,
@@ -17,7 +18,8 @@ import {
 } from '../../interface/AnswersTable';
 import TableHeader from './TableHeader';
 import TableToolbar from './TableToolbar';
-import { fetchAnswers } from '../../api/index';
+import { fetchAnswers, deleteAnswers } from '../../api/index';
+import ConfirmModal from '../common/ConfirmModal';
 
 const AnswersTable: React.FC = () => {
   const [selected, setSelected] = useState<readonly number[]>([]);
@@ -27,6 +29,7 @@ const AnswersTable: React.FC = () => {
   const [headers, setHeaders] = useState<AnswersTableHeader[]>([]);
   const [metaData, setMetaData] = useState<AnswersTableMetaData[]>([]);
   const [questionnairName, setQuestionnairName] = useState<string>('');
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -158,6 +161,10 @@ const AnswersTable: React.FC = () => {
     return answersWithHeadersId;
   };
 
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
@@ -166,6 +173,7 @@ const AnswersTable: React.FC = () => {
           headers={headers}
           totalCount={totalCount}
           selected={selected}
+          setIsModalOpen={setIsModalOpen}
         />
         <TableContainer>
           <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle">
@@ -230,6 +238,21 @@ const AnswersTable: React.FC = () => {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
+      <ConfirmModal
+        isOpen={isModalOpen}
+        question={`ID${selected.join(',')}の回答を削除してよろしいですか？`}
+        handleClose={handleModalClose}
+        execute={async () => {
+          const user = await Auth.currentAuthenticatedUser();
+          await deleteAnswers(
+            [...selected],
+            user.attributes.email,
+            questionnairId
+          );
+          window.location.reload();
+        }}
+        quit={handleModalClose}
+      />
     </Box>
   );
 };

@@ -140,3 +140,7 @@ INSERT INTO answers (question_id, item_id, metadata_id) VALUES (2, 4, 14);
 INSERT INTO answers (question_id, item_id, metadata_id) VALUES (3, 8, 14);
 INSERT INTO answers (question_id, item_id, metadata_id) VALUES (4, 12, 14);
 INSERT INTO answers (question_id, text_answer, metadata_id) VALUES (5, '20', 14);
+
+--/notification get-one用のデータ
+INSERT INTO notifications(title,content,created_date,updated_date,publish_timestamp,expire_timestamp,user_id,type_id) VALUES('test1_title','test1_content','2023-10-01','2023-10-06','2000-01-01','2500-01-01','yosiki.yokoyama.fd@s1.nttdocomo.com',1);
+INSERT INTO notifications(title,content,created_date,publish_timestamp,expire_timestamp,user_id,type_id) VALUES('test2_title','test2_content','2023-10-01','2000-01-01','2500-01-01','yosiki.yokoyama.fd@s1.nttdocomo.com',1)

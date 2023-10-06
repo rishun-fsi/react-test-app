@@ -41,8 +41,6 @@ export class DcmDxPjHealthcheckWebFormStack extends cdk.Stack {
       this,
       dbInstance
     );
-    const readReplica: rds.DatabaseInstanceReadReplica =
-      rdsResource.createReadReplica(this, dbInstance);
 
     const lambdaResource = new LambdaResource(
       this,

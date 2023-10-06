@@ -1,11 +1,32 @@
 export interface Notification {
-  registerDate: Date;
-  headline: String;
-  content: String;
-  registrant: String;
+  id: number;
+  title: string;
+  type: string;
+  createdDate: string;
+  userId: string;
+}
+
+export interface NotificationDetail {
+  content: string;
+  date: string;
 }
 
 export interface NotificationType {
   id: number;
   name: string;
+}
+
+export type NotificationFormItemProps = {
+  name: string;
+  inputElement: JSX.Element;
+  required?: boolean;
+};
+
+export interface NotificationCreationRequest {
+  title: string;
+  typeId: number;
+  content: string;
+  userId: string;
+  publishTimestamp?: string;
+  expireTimestamp?: string;
 }

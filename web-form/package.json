@@ -10,6 +10,7 @@
     "test": "jest",
     "cdk": "cdk",
     "deploy": "tsc && cdk deploy --require-approval never",
+    "deploy-prod": "tsc && cdk deploy --require-approval never --profile dcm-prod",
     "deploy-cicd": "tsc && cdk deploy --app \"npx ts-node ./bin/cicd.ts\" --require-approval never"
   },
   "devDependencies": {

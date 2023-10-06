@@ -2,12 +2,13 @@ import { Context, APIGatewayProxyResult, APIGatewayEvent } from 'aws-lambda';
 import { connectDB } from './db';
 import { createPostResponseBody } from './post';
 import { PostEventBody } from './interface/EventBody';
+import { createGetOneResponseBody } from './get-one';
 
 export const lambdaHandler = async (
   event: APIGatewayEvent,
   context: Context
 ): Promise<APIGatewayProxyResult> => {
-  const allowedHttpMethods: string[] = ['POST'];
+  const allowedHttpMethods: string[] = ['POST', 'GET'];
   if (!allowedHttpMethods.includes(event.httpMethod)) {
     throw new Error('The request method is prohibited');
   }
@@ -23,10 +24,21 @@ export const lambdaHandler = async (
 
   try {
     const db = connectDB(password);
-
-    const eventBody: PostEventBody = JSON.parse(event.body!);
-    const postResponse = await createPostResponseBody(eventBody, db);
-    return createResponse(postResponse.statusCode, postResponse.body);
+    if (
+      event.httpMethod === 'GET' &&
+      event.pathParameters !== null &&
+      event.pathParameters.id !== null
+    ) {
+      const getResponse = await createGetOneResponseBody(
+        Number(event.pathParameters.id),
+        db
+      );
+      return createResponse(getResponse.statusCode, getResponse.body);
+    } else {
+      const eventBody: PostEventBody = JSON.parse(event.body!);
+      const postResponse = await createPostResponseBody(eventBody, db);
+      return createResponse(postResponse.statusCode, postResponse.body);
+    }
   } catch (error) {
     console.error(error);
     const body = { message: 'error' };

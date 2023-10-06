@@ -1,12 +1,15 @@
+import { Stage } from '../interface/Stage';
+
 import {
   SecretsManagerClient,
   GetSecretValueCommand
 } from '@aws-sdk/client-secrets-manager';
+import { getSecretId } from './stageSwitcher';
 
-export const getSecret = async (key: string): Promise<string> => {
+export const getSecret = async (key: string, stage: Stage): Promise<string> => {
   const client = new SecretsManagerClient({ region: 'ap-northeast-1' });
   const input = {
-    SecretId: 'dcmdxpjhealthcheckwebformst-cD5kOFVF3Vo1'
+    SecretId: getSecretId(stage)
   };
   const command = new GetSecretValueCommand(input);
   const response = await client.send(command);

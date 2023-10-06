@@ -1,22 +1,26 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import Modal from '@mui/material/Modal';
 import { AlertColor } from '@mui/material/Alert';
-import Box from '@mui/material/Box';
 import QuestionForm from './QuestionForm';
 import Accordion from '../common/Accordion';
 import Snackbar from '../common/Snackbar';
-import { fetchQuestions, fetchQuestionnairById } from '../../api';
+import ConfirmModal from '../common/ConfirmModal';
+import { getTempAnswers } from '../../common/answer';
+import {
+  fetchQuestions,
+  fetchQuestionnairById,
+  fetchPreviousAnswers
+} from '../../api';
 import {
   FetchedQuestion,
   GroupedQuestion,
   Question,
   QuestionResponse
 } from '../../interface/Question';
-import { Answer } from '../../interface/Answer';
+import { Inheritance } from '../../interface/Inheritance';
+import { Answer, PreviousAnswerQueryParam } from '../../interface/Answer';
 import { QuestionnairMetaData } from '../../interface/Questionnair';
 
 type QuestionnairFormProps = {
@@ -29,18 +33,8 @@ type QuestionnairFormProps = {
   updateDescriptionAnswer: Function;
   isEdited?: boolean;
   afterSubmitPage?: string;
-};
-
-const style = {
-  position: 'absolute' as 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4
+  isInheritance: boolean;
+  existTempAnswers: boolean;
 };
 
 const expandQuestionResponse = (
@@ -69,12 +63,17 @@ const QuestionnairForm: React.FC<QuestionnairFormProps> = (props) => {
   const setAnswers = props.setAnswers;
   const isEdited: boolean =
     props.isEdited !== undefined ? props.isEdited : true;
+  const isInheritance: boolean = props.isInheritance;
+  const existTempAnswers: boolean = props.existTempAnswers;
 
   const navigate = useNavigate();
   const location = useLocation();
   const questionnairId: number = Number(location.pathname.split('/')[2]);
 
   const [questionnairName, setQuestionnairName] = useState<string>('');
+  const [inheritance, setInheritance] = useState<Inheritance | undefined>();
+  const [isKeyQuestionChange, setIsKeyQuestionChange] =
+    useState<boolean>(false);
   const [questions, setQuestions] = useState<FetchedQuestion[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isSnackbarOpen, setIsSnackbarOpen] = useState<boolean>(false);
@@ -83,6 +82,7 @@ const QuestionnairForm: React.FC<QuestionnairFormProps> = (props) => {
     useState<string>('回答の送信が完了しました。');
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
+  // ページが読み込まれたとき
   useEffect(() => {
     (async () => {
       const response: QuestionResponse = await fetchQuestions(
@@ -90,14 +90,25 @@ const QuestionnairForm: React.FC<QuestionnairFormProps> = (props) => {
         false
       );
       setQuestions(response.questions);
+      setInheritance(response.inheritance);
+
+      if (!existTempAnswers && isInheritance && response.inheritance)
+        reflectPreviousAnswer(response.inheritance);
 
       const metadata: QuestionnairMetaData = await fetchQuestionnairById(
         questionnairId
       );
-
       setQuestionnairName(metadata.name);
     })();
   }, [questionnairId]);
+
+  // キーとなる質問を変更したとき
+  useEffect(() => {
+    if (isKeyQuestionChange && isInheritance && inheritance) {
+      reflectPreviousAnswer(inheritance);
+      setIsKeyQuestionChange(false);
+    }
+  }, [isKeyQuestionChange]);
 
   const requiredQuestionIds: number[] = expandQuestionResponse(questions)
     .filter((question: Question) => question.required)
@@ -140,6 +151,7 @@ const QuestionnairForm: React.FC<QuestionnairFormProps> = (props) => {
   const submit = async () => {
     try {
       await props.sendAnswer();
+
       setSeverity('success');
       setSnackbarMessage('回答の送信が完了しました。');
       handleSnackbarOpen();
@@ -173,7 +185,114 @@ const QuestionnairForm: React.FC<QuestionnairFormProps> = (props) => {
         (answer: Answer) => answer.questionId === newAnswer.questionId
       )!;
       setAnswers([...otherAnswers, { ...previousAnswer, ...newAnswer }]);
+
+      if (questionId !== inheritance?.questionId) return;
+
+      if (isMatchTempAnswer(itemId, textAnswer)) {
+        setAnswers(getTempAnswers(props.tempPath));
+        return;
+      }
+
+      setIsKeyQuestionChange(true);
     };
+
+  // キーとなる質問の回答が一時保存された回答と一致しているか否かを判定する
+  const isMatchTempAnswer = (itemId?: number, textAnswer?: string): boolean => {
+    return getTempAnswers(props.tempPath).some(
+      (tempAnswer: Answer) =>
+        (itemId !== undefined && itemId === tempAnswer.itemId) ||
+        (textAnswer !== undefined && textAnswer === tempAnswer.textAnswer)
+    );
+  };
+
+  const reflectPreviousAnswer = async (inheritance: Inheritance) => {
+    // 「同一ユーザーの前回回答を参照する」にチェックが入っていて「キーとなる質問」が指定されていない場合
+    if (inheritance.isSameUser && inheritance.questionId === undefined) {
+      const queryParameter: PreviousAnswerQueryParam = { questionnairId };
+      const previousAnswers: Answer[] | undefined = await fetchPreviousAnswers(
+        queryParameter,
+        inheritance!.isSameUser
+      );
+      if (previousAnswers !== undefined) {
+        setAnswers(previousAnswers);
+      }
+      return;
+    }
+
+    const itemId: number | undefined = answers.find(
+      (answer: Answer) => answer.questionId === inheritance.questionId
+    )?.itemId;
+    const textAnswer: string | undefined = answers.find(
+      (answer: Answer) => answer.questionId === inheritance.questionId
+    )?.textAnswer;
+
+    if (
+      inheritance.questionId !== undefined &&
+      itemId === undefined &&
+      textAnswer === undefined
+    )
+      return;
+
+    const queryParameter: PreviousAnswerQueryParam = {
+      questionnairId,
+      questionId: inheritance.questionId,
+      itemId,
+      textAnswer
+    };
+
+    const previousAnswers: Answer[] | undefined = await fetchPreviousAnswers(
+      queryParameter,
+      inheritance.isSameUser
+    );
+
+    if (previousAnswers !== undefined) {
+      setAnswers(
+        mergeKeyQuestion(inheritance, previousAnswers, queryParameter)
+      );
+    } else {
+      setAnswers([
+        {
+          questionId: queryParameter.questionId!,
+          itemId: queryParameter?.itemId,
+          textAnswer: queryParameter?.textAnswer
+        }
+      ]);
+    }
+  };
+
+  // fetchPreviousAnswersでキーの質問IDに相当する回答情報が取得されていなければpreviousAnswersにマージする
+  const mergeKeyQuestion = (
+    inheritance: Inheritance,
+    previousAnswers: Answer[],
+    queryParameter: PreviousAnswerQueryParam
+  ): Answer[] => {
+    const isMergeKeyQuestion: boolean =
+      inheritance.questionId === undefined
+        ? false
+        : previousAnswers
+            .filter(
+              (previousAnswer: Answer) =>
+                previousAnswer.questionId !== undefined
+            )
+            .find(
+              (previousAnswer: Answer) =>
+                previousAnswer.questionId === inheritance.questionId
+            ) === undefined
+        ? true
+        : false;
+
+    if (isMergeKeyQuestion) {
+      return [
+        ...previousAnswers,
+        {
+          questionId: queryParameter.questionId!,
+          itemId: queryParameter?.itemId,
+          textAnswer: queryParameter?.textAnswer
+        }
+      ];
+    }
+    return previousAnswers;
+  };
 
   const saveTemporary = () => {
     localStorage.setItem(props.tempPath, JSON.stringify(answers));
@@ -243,25 +362,13 @@ const QuestionnairForm: React.FC<QuestionnairFormProps> = (props) => {
           {`${props.isEdited === undefined ? '回答' : '編集'}`}
         </Button>
       </Stack>
-      <Modal open={isModalOpen} onClose={handleModalClose}>
-        <Box sx={style}>
-          <Typography variant="h6" component="h2">
-            回答を提出してよろしいですか？
-          </Typography>
-          <Stack sx={{ marginTop: '0.5em' }} spacing={2} direction="row">
-            <Button variant="contained" onClick={submit}>
-              はい
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleModalClose}
-              color="secondary"
-            >
-              いいえ
-            </Button>
-          </Stack>
-        </Box>
-      </Modal>
+      <ConfirmModal
+        isOpen={isModalOpen}
+        question="回答を提出してよろしいですか？"
+        handleClose={handleModalClose}
+        execute={submit}
+        quit={handleModalClose}
+      />
       <Snackbar
         open={isSnackbarOpen}
         autoHideDuration={3000}

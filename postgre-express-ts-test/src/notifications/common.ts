@@ -25,3 +25,9 @@ export const isTimestamp = (timestampStr: string): boolean =>
   timestampStr.match(
     /[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/g
   ) !== null && isValidDate(new Date(timestampStr));
+
+export const formatDate = (date: Date) => {
+  return `${date.getFullYear()}-${('0' + (date.getMonth() + 1)).slice(-2)}-${(
+    '0' + date.getDate()
+  ).slice(-2)}`;
+};

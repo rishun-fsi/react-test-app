@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
 import { Answer } from '../interface/Answer';
 
-export const getTempAnswers = (tempPath: string) => {
+export const getTempAnswers = (tempPath: string): Answer[] => {
   return localStorage.getItem(tempPath) !== null
     ? JSON.parse(localStorage.getItem(tempPath)!)
     : [];

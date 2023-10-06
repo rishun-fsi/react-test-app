@@ -2,6 +2,7 @@ import { Context, APIGatewayEvent } from 'aws-lambda';
 import { lambdaHandler } from '../../notifications';
 import { PostEventBody } from '../../notifications/interface/EventBody';
 import * as postEvent from './json/post.json';
+import * as getOneEvent from './json/get-one.json';
 
 const context: Context = {
   callbackWaitsForEmptyEventLoop: true,
@@ -42,5 +43,17 @@ describe('POSTメソッドのテスト', () => {
     const response = await lambdaHandler(request, context);
     expect(response.statusCode).toBe(200);
     expect(JSON.parse(response.body).message).toBe('success');
+  });
+});
+
+describe('notificationIdを指定してGETするテスト', () => {
+  test('正常に応答が得られること', async () => {
+    const response = await lambdaHandler(getOneEvent, context);
+    expect(response.statusCode).toBe(200);
+    expect(JSON.parse(response.body).message).toBe('success');
+    expect(JSON.parse(response.body).notificationDetail).toEqual({
+      content: 'test1_content',
+      date: '2023-10-06'
+    });
   });
 });

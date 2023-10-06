@@ -218,6 +218,8 @@ const AnswerEditPage: React.FC = () => {
       )}
       isEdited={isEdited(answers, initialAnswers, deletedIds)}
       afterSubmitPage={`/form-answers-table/${questionnairId}`}
+      isInheritance={false}
+      existTempAnswers={getTempAnswers(tempPath).length !== 0}
     />
   );
 };

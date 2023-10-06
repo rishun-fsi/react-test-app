@@ -4,6 +4,13 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 import * as path from 'path';
+import { Stage } from '../interface/Stage';
+import {
+  getRDSSecurityGroupId,
+  getRouteTableId,
+  getSubnetIds,
+  getVPCId
+} from '../util/stageSwitcher';
 
 export class LambdaResource extends Stack {
   private password: string;
@@ -12,17 +19,19 @@ export class LambdaResource extends Stack {
   private subnets: ec2.ISubnet[];
   private securityGroup: ec2.ISecurityGroup;
   private executionRole: iam.Role;
+  private stage: Stage;
 
   constructor(scope: Construct, password: string, dbEndpoint: string) {
     super();
     this.password = password;
     this.dbEndpoint = dbEndpoint;
+    this.stage = this.node.tryGetContext('stage');
 
     this.vpc = ec2.Vpc.fromVpcAttributes(
       scope,
       'dcm-dx-pj-healthcheck-web-form-lambda-vpc',
       {
-        vpcId: 'vpc-098a9089d6918c284',
+        vpcId: getVPCId(this.stage),
         availabilityZones: ['ap-northeast-1a', 'ap-northeast-1c']
       }
     );
@@ -32,9 +41,9 @@ export class LambdaResource extends Stack {
         scope,
         'dcm-dx-pj-healthcheck-web-form-lambda-vpc-subnet',
         {
-          subnetId: 'subnet-00590d3de7aa1bed5',
+          subnetId: getSubnetIds(this.stage)[1],
           availabilityZone: 'ap-northeast-1a',
-          routeTableId: 'rtb-0b2abffa99d4a6ba8'
+          routeTableId: getRouteTableId(this.stage)
         }
       )
     ];
@@ -42,7 +51,7 @@ export class LambdaResource extends Stack {
     this.securityGroup = ec2.SecurityGroup.fromSecurityGroupId(
       scope,
       'dcm-dx-pj-healthcheck-web-form-lambda-sg',
-      'sg-05e6f4e49bb0386fb'
+      getRDSSecurityGroupId(this.stage)
     );
 
     this.executionRole = this.createExecutionRole(scope);

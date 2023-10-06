@@ -369,6 +369,9 @@ const FormEditPage: React.FC = () => {
   const [inheritance, setInheritance] = useState<Inheritance>({
     isSameUser: true
   });
+  const [initialInheritance, setInitialInheritance] = useState<Inheritance>({
+    isSameUser: true
+  });
 
   useEffect(() => {
     if (!initialQuestionnairName) {
@@ -384,8 +387,10 @@ const FormEditPage: React.FC = () => {
       );
       setInitialQuestions(completelyExpandQuestionResponse(response.questions));
       setQuestions(completelyExpandQuestionResponse(response.questions));
-      if (response.inheritance)
+      if (response.inheritance) {
         setInheritance({ questionId: 0, ...response.inheritance });
+        setInitialInheritance({ questionId: 0, ...response.inheritance });
+      }
     })();
   }, [questionnairId, navigate, initialQuestionnairName]);
 
@@ -407,7 +412,10 @@ const FormEditPage: React.FC = () => {
       restoreQuestion={restoreQuestion(questions, setQuestions)}
       restoreQuestionItem={restoreQuestionItem(questions, setQuestions)}
       save={save(initialQuestions, questionnairId)}
-      canSave={!_.isEqual(questions, initialQuestions)}
+      canSave={
+        !_.isEqual(questions, initialQuestions) ||
+        !_.isEqual(inheritance, initialInheritance)
+      }
       inheritance={inheritance}
       setInheritance={setInheritance}
     />

@@ -3,9 +3,11 @@ import * as rds from 'aws-cdk-lib/aws-rds';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
+import { getRDSSecurityGroupId, getSubnetIds, getVPCId } from '../util/stageSwitcher';
+import { Stage } from '../interface/Stage';
 
 export class RdsResource extends Stack {
-  private stage: string;
+  private stage: Stage;
   private securityGroup: ec2.ISecurityGroup;
   private instanceType: ec2.InstanceType;
 
@@ -15,7 +17,7 @@ export class RdsResource extends Stack {
     this.securityGroup = ec2.SecurityGroup.fromSecurityGroupId(
       scope,
       'dcm-dx-pj-health-check-web-form-db-sg',
-      'sg-0d037f25de70c99db'
+      getRDSSecurityGroupId(this.stage)
     );
     this.instanceType = new ec2.InstanceType('t3.small');
   }
@@ -25,12 +27,12 @@ export class RdsResource extends Stack {
       ec2.Subnet.fromSubnetId(
         scope,
         'private-subnet-1',
-        'subnet-00590d3de7aa1bed5'
+        getSubnetIds(this.stage)[1]
       ),
       ec2.Subnet.fromSubnetId(
         scope,
         'private-subnet-2',
-        'subnet-0f7eea90fe5989f0f'
+        getSubnetIds(this.stage)[2]
       )
     ];
     const subnetGroup = new rds.SubnetGroup(
@@ -55,11 +57,11 @@ export class RdsResource extends Stack {
       scope,
       'dcm-dx-pj-health-check-web-form-vpc',
       {
-        vpcId: 'vpc-098a9089d6918c284',
+        vpcId: getVPCId(this.stage),
         availabilityZones: ['ap-northeast-1a', 'ap-northeast-1c'],
         publicSubnetIds: [
-          'subnet-00590d3de7aa1bed5',
-          'subnet-0f7eea90fe5989f0f'
+          getSubnetIds(this.stage)[1],
+          getSubnetIds(this.stage)[2]
         ]
       }
     );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -23,6 +23,7 @@ type TableToolbarProps = {
   headers: AnswersTableHeader[];
   totalCount: number;
   selected: readonly number[];
+  setIsModalOpen: Dispatch<SetStateAction<boolean>>;
 };
 
 const TableToolbar: React.FC<TableToolbarProps> = (props) => {
@@ -210,6 +211,10 @@ const TableToolbar: React.FC<TableToolbarProps> = (props) => {
     downloadCSV(csvData, fileName);
   };
 
+  const handleSelectDelete = async (): Promise<void> => {
+    props.setIsModalOpen(true);
+  };
+
   return (
     <Toolbar
       sx={{
@@ -240,7 +245,13 @@ const TableToolbar: React.FC<TableToolbarProps> = (props) => {
           <MenuItem value="editAnswer" disabled={props.selected.length !== 1}>
             回答を編集
           </MenuItem>
-          <MenuItem value="delete">削除</MenuItem>
+          <MenuItem
+            value="delete"
+            disabled={props.selected.length < 1}
+            onClick={handleSelectDelete}
+          >
+            削除
+          </MenuItem>
         </Select>
       </FormControl>
       <Tooltip title="Filter list">

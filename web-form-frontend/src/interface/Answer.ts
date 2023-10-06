@@ -64,3 +64,10 @@ export interface ChunkUpsertAnswerRequest {
   questionnairId: number;
   answers: ChunkUpsertAnswer[];
 }
+
+export interface PreviousAnswerQueryParam {
+  questionnairId: number;
+  questionId?: number;
+  itemId?: number;
+  textAnswer?: string;
+}

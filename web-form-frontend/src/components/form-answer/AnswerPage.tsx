@@ -37,6 +37,8 @@ const AnswerPage: React.FC = () => {
       removeAnswer={removeAnswer(answers, setAnswers)}
       updateDescriptionAnswer={updateDescriptionAnswer(answers, setAnswers)}
       addAnswer={addAnswer(answers, setAnswers)}
+      isInheritance={true}
+      existTempAnswers={getTempAnswers(tempPath).length !== 0}
     />
   );
 };

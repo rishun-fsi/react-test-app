@@ -8,3 +8,7 @@ export interface DbNotification {
   publish_timestamp?: Date;
   expire_timestamp?: Date;
 }
+export interface NotificationDetail {
+  content: string;
+  date?: string;
+}

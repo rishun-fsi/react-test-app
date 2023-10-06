@@ -1,3 +1,148 @@
+describe('前回の回答を取得する機能', () => {
+  beforeEach(() => {
+    cy.visit('/form-management');
+    cy.origin(
+      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
+      () => {
+        cy.get('input[type="button"]').eq(1).click();
+      }
+    );
+    cy.origin('https://login.microsoftonline.com', () => {
+      cy.get('input[placeholder="メール、電話、Skype"]').type(
+        'test@PJHealthcheckWebForm.onmicrosoft.com'
+      );
+      cy.get('input[type = "submit"]').contains('次へ').click();
+      cy.get('input[placeholder="パスワード"]').type('Healthcheck@123');
+      cy.get('input[type = "submit"]').contains('サインイン').click();
+      cy.get('input[type="button"]').click();
+    });
+    cy.origin(
+      'https://pj-healthcheck-web-form.auth.ap-northeast-1.amazoncognito.com',
+      () => {}
+    );
+    cy.get('button').contains('編集').click();
+  });
+
+  it('「同一ユーザーの前回回答を取得する」が有効かつ「キーとなる質問」が指定されていない場合に同一ユーザーの前回回答を取得できること', () => {
+    cy.get('[role="button"]').eq(0).click();
+    cy.get('li').contains('指定しない').click();
+    cy.get('input[type="checkbox"]').eq(0).check();
+    cy.get('button').contains('保存').click();
+
+    cy.visit('/form-answer/1');
+    cy.get('[role="button"]').eq(1).click();
+    cy.get('input[type="radio"]').eq(0).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(0).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(1).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(2).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(3).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(4).should('not.be.checked');
+
+    cy.visit('/form-management');
+    cy.get('button').contains('編集').click();
+    cy.get('[role="button"]').eq(0).click();
+    cy.get('li').contains('システム名').click();
+    cy.get('input[type="checkbox"]').eq(0).uncheck();
+    cy.get('button').contains('保存').click();
+  });
+
+  it('「同一ユーザーの前回回答を取得する」が有効かつ「キーとなる質問」が指定されている場合に条件に応じた前回回答を取得できること', () => {
+    cy.get('input[type="checkbox"]').eq(0).check();
+    cy.get('button').contains('保存').click();
+
+    cy.visit('/form-answer/1');
+    cy.get('[role="button"]').eq(0).click();
+    cy.get('li').contains('システムA').click();
+    cy.get('[role="button"]').eq(1).click();
+    cy.get('input[type="radio"]').eq(0).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(0).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(1).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(2).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(3).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(4).should('not.be.checked');
+
+    cy.visit('/form-management');
+    cy.get('button').contains('編集').click();
+    cy.get('input[type="checkbox"]').eq(0).uncheck();
+    cy.get('button').contains('保存').click();
+  });
+
+  it('「同一ユーザーの前回回答を取得する」が無効かつ「キーとなる質問」が指定されている場合に条件に応じた前回回答を取得できること', () => {
+    cy.visit('/form-answer/1');
+    cy.get('[role="button"]').eq(0).click();
+    cy.get('li').contains('システムB').click();
+    cy.get('[role="button"]').eq(1).click();
+    cy.get('input[type="radio"]').eq(0).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(0).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(1).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(2).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(3).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(4).should('not.be.checked');
+  });
+
+  it('前回回答がない場合は回答が入力されていないこと', () => {
+    cy.visit('/form-answer/1');
+    cy.get('[role="button"]').eq(0).click();
+    cy.get('li').contains('システムC').click();
+    cy.get('[role="button"]').eq(1).click();
+    cy.get('input[type="radio"]').eq(0).should('not.be.checked');
+    cy.get('input[type="radio"]').eq(1).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(0).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(1).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(2).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(3).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(4).should('not.be.checked');
+  });
+
+  it('一時保存された回答が表示された状態からキーとなる質問の回答を変更した場合、一時保存された回答ではなく前回回答が取得されること', () => {
+    cy.visit('/form-answer/1');
+    cy.get('[role="button"]').eq(0).click();
+    cy.get('li').contains('システムA').click();
+    cy.get('[role="button"]').eq(1).click();
+    cy.get('input[type="text"]').eq(0).type('aaa');
+    cy.get('input[type="text"]').eq(1).type('1');
+    cy.get('button').contains('一時保存').click();
+
+    cy.visit('/');
+    cy.visit('/form-answer/1');
+    cy.get('[role="button"]').eq(0).click();
+    cy.get('li').contains('システムB').click();
+    cy.get('[role="button"]').eq(1).click();
+    cy.get('input[type="checkbox"]').eq(0).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(1).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(2).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(3).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(4).should('not.be.checked');
+  });
+
+  it('一時保存された回答が表示された状態からキーとなる質問の回答を変更し、さらにキーの回答を元の状態に戻したとき、一時保存された回答が再び表示されること', () => {
+    cy.visit('/form-answer/1');
+    cy.get('[role="button"]').eq(0).click();
+    cy.get('li').contains('システムA').click();
+    cy.get('[role="button"]').eq(1).click();
+    cy.get('input[type="text"]').eq(0).type('aaa');
+    cy.get('input[type="text"]').eq(1).type('1');
+    cy.get('button').contains('一時保存').click();
+
+    cy.visit('/');
+    cy.visit('/form-answer/1');
+    cy.get('[role="button"]').eq(0).click();
+    cy.get('li').contains('システムB').click();
+
+    cy.get('[role="button"]').eq(0).click();
+    cy.get('li').contains('システムA').click();
+    cy.get('[role="button"]').eq(1).click();
+    cy.get('input[type="radio"]').eq(0).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(0).should('be.checked');
+    cy.get('input[type="checkbox"]').eq(1).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(2).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(3).should('not.be.checked');
+    cy.get('input[type="checkbox"]').eq(4).should('be.checked');
+    cy.get('input[type="text"]').eq(0).should('have.value', 'aaa');
+    cy.get('input[type="text"]').eq(1).should('have.value', '1');
+  });
+});
+
 describe('アンケート回答機能', () => {
   beforeEach(() => {
     cy.visit('/form-answer/1');
@@ -98,8 +243,6 @@ describe('アンケート回答機能', () => {
   it('必須項目が充足されると回答ボタンが活性化すること', () => {
     cy.get('@systemSelect').click();
     cy.get('li').contains('システムA').click();
-    cy.get('@devEnvAccordion').click();
-    cy.get('input[type="radio"]').eq(0).check();
     cy.get('[role="button"]').eq(2).click();
     cy.get('li').contains('1時間以内').click();
     cy.get('input[type="text"]').eq(1).type('1');
@@ -109,8 +252,6 @@ describe('アンケート回答機能', () => {
   it('回答ボタンを押すと回答送信確認モーダルが表示されることの確認', () => {
     cy.get('@systemSelect').click();
     cy.get('li').contains('システムA').click();
-    cy.get('@devEnvAccordion').click();
-    cy.get('input[type="radio"]').eq(0).check();
     cy.get('[role="button"]').eq(2).click();
     cy.get('li').contains('1時間以内').click();
     cy.get('input[type="text"]').eq(1).type('1');
@@ -121,8 +262,6 @@ describe('アンケート回答機能', () => {
   it('モーダルではいを押すと回答が送信されたスナックバーが表示されること', () => {
     cy.get('@systemSelect').click();
     cy.get('li').contains('システムA').click();
-    cy.get('@devEnvAccordion').click();
-    cy.get('input[type="radio"]').eq(0).check();
     cy.get('[role="button"]').eq(2).click();
     cy.get('li').contains('1時間以内').click();
     cy.get('input[type="text"]').eq(1).type('1');
@@ -134,8 +273,6 @@ describe('アンケート回答機能', () => {
   it('モーダルでいいえを押すと回答画面に戻ること', () => {
     cy.get('@systemSelect').click();
     cy.get('li').contains('システムA').click();
-    cy.get('@devEnvAccordion').click();
-    cy.get('input[type="radio"]').eq(0).check();
     cy.get('[role="button"]').eq(2).click();
     cy.get('li').contains('1時間以内').click();
     cy.get('input[type="text"]').eq(1).type('1');
@@ -152,8 +289,6 @@ describe('アンケート回答機能', () => {
     cy.get('@systemSelect').click();
     cy.get('li').contains('システムA').click();
     cy.get('@devEnvAccordion').click();
-    cy.get('input[type="radio"]').eq(0).check();
-    cy.get('input[type="checkbox"]').eq(0).check();
     cy.get('input[type="text"]').eq(0).type('aaa');
     cy.get('input[type="text"]').eq(1).type('1');
     cy.get('button').contains('一時保存').click();
@@ -173,13 +308,11 @@ describe('アンケート回答機能', () => {
 
   it('回答を送信したときに一時保存した内容が破棄されること', () => {
     cy.get('@systemSelect').click();
-    cy.get('li').contains('システムA').click();
+    cy.get('li').contains('システムB').click();
     cy.get('button').contains('一時保存').click();
-    cy.get('@devEnvAccordion').click();
-    cy.get('input[type="radio"]').eq(0).check();
     cy.get('[role="button"]').eq(2).click();
-    cy.get('li').contains('1時間以内').click();
-    cy.get('input[type="text"]').eq(1).type('1');
+    cy.get('li').contains('1日以内').click();
+    cy.get('input[type="text"]').eq(1).type('20');
     cy.get('button').contains('回答').click();
     cy.get('button').contains('はい').click();
     cy.contains('回答の送信が完了しました。').should('exist');

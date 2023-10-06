@@ -3,18 +3,21 @@ import { Construct } from 'constructs';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as cloudfrontOrigins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import { getWebAclArn } from '../util/stageSwitcher';
+import { Stage } from '../interface/Stage';
 
 export class CloudFrontResource extends Stack {
+  private stage: Stage;
   public createOriginAccessIdentity(
     scope: Construct
   ): cloudfront.OriginAccessIdentity {
-    const stage = this.node.tryGetContext('stage');
+    this.stage = this.node.tryGetContext('stage');
 
     const originAccessIdentity = new cloudfront.OriginAccessIdentity(
       scope,
-      `dcm-dx-pj-healthcheck-web-form-originAccessIdentity-${stage}`,
+      `dcm-dx-pj-healthcheck-web-form-originAccessIdentity-${this.stage}`,
       {
-        comment: `dcm-dx-pj-healthcheck-web-form-originAccessIdentity-${stage}`
+        comment: `dcm-dx-pj-healthcheck-web-form-originAccessIdentity-${this.stage}`
       }
     );
 
@@ -59,8 +62,7 @@ export class CloudFrontResource extends Stack {
           })
         },
         priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
-        webAclId:
-          'arn:aws:wafv2:us-east-1:095439996287:global/webacl/dcm-dx-pj-healthcheck-web-form-web-acl/7ac9377a-999d-4c63-a6ab-41ba714e437f'
+        webAclId: getWebAclArn(this.stage)
       }
     );
 
