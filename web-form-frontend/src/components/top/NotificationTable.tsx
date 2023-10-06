@@ -10,6 +10,11 @@ import TableRow from '@mui/material/TableRow';
 import { Notification } from '../../interface/Notification';
 import Headline from '../common/Headline';
 
+// Define the props interface
+interface NotificationTableProps {
+  onColumnClick?: () => void;
+}
+
 const notificationRows: Notification[] = [
   {
     registerDate: new Date(2023, 4, 1),
@@ -31,7 +36,7 @@ const notificationRows: Notification[] = [
   }
 ];
 
-const NotificationTable: React.FC = () => {
+const NotificationTable: React.FC<NotificationTableProps> = ({ onColumnClick }) => {
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }} variant="outlined" square>
@@ -50,6 +55,7 @@ const NotificationTable: React.FC = () => {
                 <TableRow
                   key={id}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  onClick={onColumnClick}
                 >
                   <TableCell>
                     {notification.registerDate.toLocaleDateString()}

@@ -50,7 +50,7 @@ const FunctionMenu: React.FC = () => {
     { name: 'ファイル入出力', path: '/file-io', isFolded: false },
     { name: 'お知らせ管理', path: '/', isFolded: true, subMenu: [
       { name: 'お知らせ登録', path: '/notification-register' },
-      { name: 'お知らせ編集', path: '/' }
+      { name: 'お知らせ編集', path: '/notification-editor' }
     ] }
   ];
 
