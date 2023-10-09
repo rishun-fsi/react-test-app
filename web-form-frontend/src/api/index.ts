@@ -47,7 +47,7 @@ export const fetchPreviousAnswers = async (
   isSameUser: boolean
 ): Promise<Answer[] | undefined> => {
   const user = await Auth.currentAuthenticatedUser();
-  const userId = user.attributes.email;
+  const userId = user.username;
   const headers: AxiosRequestConfig = await eventHeaders();
 
   try {
@@ -278,40 +278,61 @@ export const fetchNotifications = async (
   limit: number,
   offset: number
 ): Promise<Notification[]> => {
-  return [
-    {
-      id: 1,
-      createdDate: '2023-10-01',
-      title: 'お知らせ1',
-      userId: '山田太郎',
-      type: '重要'
-    },
-    {
-      id: 2,
-      createdDate: '2023-10-01',
-      title: 'お知らせ2',
-      userId: '山田次郎',
-      type: '重要'
-    },
-    {
-      id: 3,
-      createdDate: '2023-10-01',
-      title: 'お知らせ3',
-      userId: '山田三郎',
-      type: '重要'
-    },
-    {
-      id: 4,
-      createdDate: '2023-10-01',
-      title: 'お知らせ4',
-      userId: '山田三郎',
-      type: '重要'
-    }
-  ];
+  // return [
+  //   {
+  //     id: 1,
+  //     createdDate: '2023-10-01',
+  //     title: 'お知らせ1',
+  //     userId: '山田太郎',
+  //     type: '重要'
+  //   },
+  //   {
+  //     id: 2,
+  //     createdDate: '2023-10-01',
+  //     title: 'お知らせ2',
+  //     userId: '山田次郎',
+  //     type: '重要'
+  //   },
+  //   {
+  //     id: 3,
+  //     createdDate: '2023-10-01',
+  //     title: 'お知らせ3',
+  //     userId: '山田三郎',
+  //     type: '重要'
+  //   },
+  //   {
+  //     id: 4,
+  //     createdDate: '2023-10-01',
+  //     title: 'お知らせ4',
+  //     userId: '山田三郎',
+  //     type: '重要'
+  //   }
+  // ];
+  const headers: AxiosRequestConfig = await eventHeaders();
+
+  const response = await axios.get(`${API_BASE_URL}/notifications`, {
+    params: { limit, offset },
+    ...headers
+  });
+  console.log(response.data.notifications)
+  return response.data.notifications;
+
 };
 
 export const fetchNotificationDetail = async (
-  id: number
+  notificationId: number
 ): Promise<NotificationDetail> => {
-  return { content: 'aaa', date: '2023-10-10' };
+  //return { content: 'aaa', date: '2023-10-10' };
+
+  const headers: AxiosRequestConfig = await eventHeaders();
+
+  const response = await axios.get(
+    `${API_BASE_URL}/notifications/${notificationId}`,
+    { ...headers }
+  );
+  return {
+    content: response.data.notificationDetail.content,
+    date: response.data.notificationDetail.date
+  };
+
 };

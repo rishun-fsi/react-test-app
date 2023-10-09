@@ -12,3 +12,15 @@ export interface NotificationDetail {
   content: string;
   date?: string;
 }
+
+export interface Notification {
+  id: number;
+  title: string;
+  userId: string;
+  createdDate: string;
+  updatedDate?: string;
+  publishTimestamp?: Date;
+  expireTimestamp?: Date;
+  typeId: number;
+  type: string;
+}

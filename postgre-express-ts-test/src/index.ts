@@ -14,6 +14,8 @@ import { PostEventBody } from './answer/interface/EventBody';
 
 
 import { createPostResponseBody as createNotificationsPostResponseBody} from './notifications/post';
+import { createGetOneResponseBody as createGetOneResponseBody2 } from './notifications/get-one';
+import { createGetResponseBody as  createGetResponseBody5} from './notifications/get';
 
 import { createGetResponseBody as  createGetResponseBody4} from './notifications-type/get';
 
@@ -214,29 +216,6 @@ app.use("/questionnair/:questionnairId", questionnairHandle);
 
 app.use("/questionnair", questionnairHandle);
 
-
-
-app.post("/notifications", async (req: Request, res: Response, next: NextFunction) => {
-  if (req.method === 'POST' && !req.body) {
-    //return createResponse(400, { message: 'データを指定してください。' });
-    return res.status(400).json({ message: 'データを指定してください。' });
-  }
-
-  try {
-    const db = connectDB(password);
-
-    const postResponse = await createNotificationsPostResponseBody(req.body!, db);
-    //return createResponse(postResponse.statusCode, postResponse.body);
-    return res.status(postResponse.statusCode).json(postResponse.body);
-  } catch (error) {
-    console.error(error);
-    const body = { message: 'error' };
-    //return createResponse(500, body);
-    return res.status(500).json(body);
-  }
-
-});
-
 app.get("/notifications/type", async (req: Request, res: Response, next: NextFunction) => {
 
   try {
@@ -253,6 +232,51 @@ app.get("/notifications/type", async (req: Request, res: Response, next: NextFun
   }
 
 });
+
+const notificationsHandle = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.method === 'POST' && !req.body) {
+    //return createResponse(400, { message: 'データを指定してください。' });
+    return res.status(400).json({ message: 'データを指定してください。' });
+  }
+
+  try {
+    const db = connectDB(password);
+    if (
+      req.method === 'GET' &&
+      req.params !== null &&
+      req.params.notificationId !== undefined
+    ) {
+      const getResponse = await createGetOneResponseBody2(
+        Number(req.params.notificationId),
+        db
+      );
+      //return createResponse(getResponse.statusCode, getResponse.body);
+      return res.status(getResponse.statusCode).json(getResponse.body);
+    } else if( req.method === 'GET') {
+
+      const getResponse = await createGetResponseBody5(
+        req.query! as APIGatewayProxyEventQueryStringParameters,
+        db
+      );
+      //return createResponse(getResponse.statusCode, getResponse.body);
+      return res.status(getResponse.statusCode).json(getResponse.body);
+    } else {
+      const postResponse = await createNotificationsPostResponseBody(req.body!, db);
+      //return createResponse(postResponse.statusCode, postResponse.body);
+      return res.status(postResponse.statusCode).json(postResponse.body);
+    }
+  } catch (error) {
+    console.error(error);
+    const body = { message: 'error' };
+    //return createResponse(500, body);
+    return res.status(500).json(body);
+  }
+}
+
+
+app.use("/notifications/:notificationId", notificationsHandle);
+
+app.use("/notifications", notificationsHandle);
 
 
 const PORT = 5000

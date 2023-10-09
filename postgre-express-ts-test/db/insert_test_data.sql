@@ -1,3 +1,5 @@
+\encoding UTF8;
+
 INSERT INTO notification_types (name, severity) VALUES('重要', 100);
 INSERT INTO notification_types (name, severity) VALUES('周知', 50);
 INSERT INTO notification_types (name, severity) VALUES('その他', 10);

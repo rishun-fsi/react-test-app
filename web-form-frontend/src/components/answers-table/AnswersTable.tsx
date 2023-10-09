@@ -246,7 +246,7 @@ const AnswersTable: React.FC = () => {
           const user = await Auth.currentAuthenticatedUser();
           await deleteAnswers(
             [...selected],
-            user.attributes.email,
+            user.username,
             questionnairId
           );
           window.location.reload();

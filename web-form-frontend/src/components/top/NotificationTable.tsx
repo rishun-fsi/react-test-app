@@ -29,7 +29,7 @@ const NotificationTable: React.FC = () => {
 
   const getNotificationTitle = (id: number): string => {
     const targetNotification: Notification | undefined = notifications.find(
-      (notification) => notification.id === targetId
+      (notification) => notification.id === id
     );
 
     if (targetNotification === undefined) return '';
@@ -77,12 +77,14 @@ const NotificationTable: React.FC = () => {
           </Table>
         </TableContainer>
       </Paper>
+      {isDetailOpen ?
       <NotificationModal
         isOpen={isDetailOpen}
         id={targetId}
         title={getNotificationTitle(targetId)}
         handleClose={handleOpen(false)}
       />
+      :<></>}
     </Box>
   );
 };

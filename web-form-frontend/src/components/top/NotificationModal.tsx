@@ -29,7 +29,6 @@ const NotificationModal: React.FC<NotificationModalProps> = (props) => {
     content: '',
     date: ''
   });
-
   useEffect(() => {
     (async () => {
       const detail: NotificationDetail = await fetchNotificationDetail(

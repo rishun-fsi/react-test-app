@@ -116,7 +116,7 @@ const NotificationRegisterPage: React.FC = () => {
           title,
           typeId,
           content,
-          user.attributes.email,
+          user.username,
           publishTimestamp,
           expireTimestamp
         )
@@ -135,7 +135,7 @@ const NotificationRegisterPage: React.FC = () => {
         title,
         typeId,
         content,
-        user.attributes.email,
+        user.username,
         publishTimestamp,
         expireTimestamp
       );

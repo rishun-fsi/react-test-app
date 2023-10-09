@@ -3,6 +3,7 @@ import { connectDB } from './db';
 import { createPostResponseBody } from './post';
 import { PostEventBody } from './interface/EventBody';
 import { createGetOneResponseBody } from './get-one';
+import { createGetResponseBody } from './get';
 
 export const lambdaHandler = async (
   event: APIGatewayEvent,
@@ -27,10 +28,16 @@ export const lambdaHandler = async (
     if (
       event.httpMethod === 'GET' &&
       event.pathParameters !== null &&
-      event.pathParameters.id !== null
+      event.pathParameters.id !== undefined
     ) {
       const getResponse = await createGetOneResponseBody(
         Number(event.pathParameters.id),
+        db
+      );
+      return createResponse(getResponse.statusCode, getResponse.body);
+    } else if( event.httpMethod === 'GET') {
+      const getResponse = await createGetResponseBody(
+        event.queryStringParameters!,
         db
       );
       return createResponse(getResponse.statusCode, getResponse.body);
