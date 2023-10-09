@@ -15,7 +15,7 @@ import NotificationModal from './NotificationModal';
 
 // Define the props interface
 interface NotificationTableProps {
-  onColumnClick?: () => void;
+  onColumnClick?: (notification: Notification) => void;
 }
 
 const NotificationTable: React.FC<NotificationTableProps> = ({ onColumnClick }) => {
@@ -60,7 +60,7 @@ const NotificationTable: React.FC<NotificationTableProps> = ({ onColumnClick }) 
                 <TableRow
                   key={notification.id}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  onClick={onColumnClick}
+                  onClick={() => onColumnClick?.(notification)} 
                 >
                   <TableCell>{notification.createdDate}</TableCell>
                   <TableCell>{notification.type}</TableCell>

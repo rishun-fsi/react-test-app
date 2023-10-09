@@ -8,11 +8,16 @@ import Select from '@mui/material/Select';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { fetchNotificationTypes } from '../../api';
-import { NotificationType } from '../../interface/Notification';
+import { fetchNotificationDetail, fetchNotificationTypes } from '../../api';
+import {
+  Notification,
+  NotificationDetail,
+  NotificationType
+} from '../../interface/Notification';
 import NotificationFormItem from '../notification-register/NotificationFormItem';
 import NotificationTable from '../top/NotificationTable';
 import { Box } from '@mui/material';
+import dayjs from 'dayjs';
 
 const NotificationEditorPage: React.FC = () => {
   const [notificationTypes, setNotificationTypes] = useState<
@@ -20,6 +25,20 @@ const NotificationEditorPage: React.FC = () => {
   >([]);
 
   const [isBoxVisible, setIsBoxVisible] = useState(false);
+  const [notification, setNotification] = useState<Notification>({
+    id: 0,
+    title: '',
+    type: '',
+    createdDate: '',
+    userId: '',
+    typeId: 0
+  });
+
+  const [notificationDetail, setNotificationDetail] =
+    useState<NotificationDetail>({
+      content: '',
+      date: ''
+    });
 
   useEffect(() => {
     (async () => {
@@ -28,17 +47,33 @@ const NotificationEditorPage: React.FC = () => {
     })();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      if (notification.id > 0) {
+        const detail: NotificationDetail = await fetchNotificationDetail(
+          notification.id
+        );
+        setNotificationDetail(detail);
+      }
+    })();
+  }, [notification.id]);
+
   const notificationItems: { name: string; inputElement: JSX.Element }[] = [
     {
       name: 'タイトル',
       inputElement: (
-        <TextField sx={{ maxWidth: '60%' }} variant="outlined" fullWidth />
+        <TextField
+          sx={{ maxWidth: '60%' }}
+          variant="outlined"
+          fullWidth
+          value={notification.title}
+        />
       )
     },
     {
       name: 'お知らせ種別',
       inputElement: (
-        <Select sx={{ minWidth: '10%' }}>
+        <Select sx={{ minWidth: '10%' }} value={notification.typeId}>
           {notificationTypes.map((notificationType: NotificationType) => (
             <MenuItem value={notificationType.id} key={notificationType.id}>
               {notificationType.name}
@@ -56,6 +91,7 @@ const NotificationEditorPage: React.FC = () => {
           fullWidth
           rows={4}
           variant="outlined"
+          value={notificationDetail.content}
         />
       )
     },
@@ -63,7 +99,7 @@ const NotificationEditorPage: React.FC = () => {
       name: '掲載開始日時',
       inputElement: (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DateTimePicker />
+          <DateTimePicker value={notification.publishTimestamp ? dayjs(notification.publishTimestamp): null} />
         </LocalizationProvider>
       )
     },
@@ -71,7 +107,7 @@ const NotificationEditorPage: React.FC = () => {
       name: '掲載終了日時',
       inputElement: (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DateTimePicker />
+          <DateTimePicker value={notification.expireTimestamp ? dayjs(notification.expireTimestamp): null} />
         </LocalizationProvider>
       )
     }
@@ -86,7 +122,12 @@ const NotificationEditorPage: React.FC = () => {
         flexDirection: 'column'
       }}
     >
-      <NotificationTable onColumnClick={() => setIsBoxVisible(true)}  />
+      <NotificationTable
+        onColumnClick={(notification: Notification) => {
+          setIsBoxVisible(true);
+          setNotification(notification);
+        }}
+      />
       {isBoxVisible && (
         <Box
           sx={{
@@ -103,7 +144,7 @@ const NotificationEditorPage: React.FC = () => {
             sx={{
               marginTop: '0.5em',
               display: 'flex',
-              justifyContent: 'space-between',
+              justifyContent: 'space-between'
             }}
             spacing={2}
             direction="row"
@@ -112,7 +153,9 @@ const NotificationEditorPage: React.FC = () => {
               <Button variant="contained">一時保存</Button>
               <Button variant="contained">編集完了</Button>
             </Stack>
-            <Button variant="contained" onClick={() => setIsBoxVisible(false)}>キャンセル</Button>
+            <Button variant="contained" onClick={() => setIsBoxVisible(false)}>
+              キャンセル
+            </Button>
           </Stack>
         </Box>
       )}

@@ -4,6 +4,11 @@ export interface Notification {
   type: string;
   createdDate: string;
   userId: string;
+  typeId: number;
+  updatedDate?: string;
+  publishTimestamp?: Date;
+  expireTimestamp?: Date;
+  
 }
 
 export interface NotificationDetail {
