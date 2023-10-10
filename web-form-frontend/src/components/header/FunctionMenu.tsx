@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -32,11 +32,7 @@ const FunctionMenu: React.FC = () => {
   };
 
   const toggleSubMenu = (name: string) => {
-    if (selected === name) {
-      setSelected('');
-    } else {
-      setSelected(name);
-    }
+    setSelected(selected === name ? '' : name);
   };
 
   const menuList: Menu[] = [
@@ -48,10 +44,15 @@ const FunctionMenu: React.FC = () => {
     { name: 'プロダクト管理', path: '/', isFolded: false },
     { name: 'フォーム管理', path: '/form-management', isFolded: false },
     { name: 'ファイル入出力', path: '/file-io', isFolded: false },
-    { name: 'お知らせ管理', path: '/', isFolded: true, subMenu: [
-      { name: 'お知らせ登録', path: '/notification-register' },
-      { name: 'お知らせ編集', path: '/notification-editor' }
-    ] }
+    {
+      name: 'お知らせ管理',
+      path: '/',
+      isFolded: true,
+      subMenu: [
+        { name: 'お知らせ登録', path: '/notification-register'},
+        { name: 'お知らせ編集', path: '/notification-editor' }
+      ]
+    }
   ];
 
   return (
@@ -82,9 +83,8 @@ const FunctionMenu: React.FC = () => {
                 <ListItemText primary={menu.name} />
                 {menu.isFolded && (selected === menu.name ? <ExpandLessIcon /> : <ExpandMoreIcon />)}
               </ListItemButton>
-              {menu.isFolded && selected === menu.name && menu.subMenu && menu.subMenu.length > 0 && ( // subMenuが存在し、長さが1以上の場合のみ実行
-                // <List sx={{ background: '#f5f5f5', border: '1px solid #e0e0e0', margin: '0 10px', borderRadius: '5px' }}>
-                <List sx={{ border: '1px solid #e0e0e0',margin: '0 0 0 10px' }}>
+              {menu.isFolded && selected === menu.name && menu.subMenu && menu.subMenu.length > 0 && (
+                <List sx={{ border: '1px solid #e0e0e0', margin: '0 0 0 10px' }}>
                   {menu.subMenu.map((subMenu: Menu, subIndex: number) => (
                     <div key={subMenu.name}>
                       <ListItemButton
@@ -93,6 +93,21 @@ const FunctionMenu: React.FC = () => {
                       >
                         <ListItemText primary={subMenu.name} />
                       </ListItemButton>
+                      {subMenu.subMenu && subMenu.subMenu.length > 0 && (
+                        <List sx={{ border: '1px solid #e0e0e0', margin: '0 0 0 10px' }}>
+                          {subMenu.subMenu.map((subSubMenu: Menu, subSubIndex: number) => (
+                            <div key={subSubMenu.name}>
+                              <ListItemButton
+                                onClick={onClickMenuButton(false, subSubMenu.path)}
+                                sx={{ paddingLeft: 8 }}
+                              >
+                                <ListItemText primary={subSubMenu.name} />
+                              </ListItemButton>
+                              {subSubIndex < subMenu.subMenu!.length - 1 && <Divider />}
+                            </div>
+                          ))}
+                        </List>
+                      )}
                       {subIndex < menu.subMenu!.length - 1 && <Divider />}
                     </div>
                   ))}

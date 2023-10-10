@@ -59,7 +59,10 @@ const NotificationTable: React.FC<NotificationTableProps> = ({ onColumnClick }) 
               {notifications.map((notification) => (
                 <TableRow
                   key={notification.id}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } , '&:hover': {
+                    backgroundColor: '#f0f0f0', // hover時の背景色
+                    cursor: 'pointer',
+                  }}}
                   onClick={() => onColumnClick?.(notification)} 
                 >
                   <TableCell>{notification.createdDate}</TableCell>
